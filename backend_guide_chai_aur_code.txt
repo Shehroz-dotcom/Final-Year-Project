@@ -1,0 +1,33 @@
+app.js file 
+import routes and use routes 
+example 
+import userRouter from '././userRouter
+
+app.use("/api/v1/users")
+
+
+
+
+
+Routes folder > user.routes.js 
+import controllers from controllers 
+example 
+import loginUser from "./controllers/user.controllers.js"
+
+create router 
+const router = Router() // from express 
+
+router.route("/Logout").post(LogoutUser)
+export default router
+
+
+
+
+
+
+multer middleware in middleware folder
+
+
+
+in index.js file only connectDb and start app listing 
+
