@@ -25,7 +25,7 @@ const ForgetPassword = async (req, res) => {
     await User.save({ validateBeforeSave: false });
 
     //frontend url where you want to direct user 
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+    const resetUrl = `${process.env.FRONTEND_URL}/reset_Password/${resetToken}`;
 
     const message = ` 
       <h2>Password Reset Link</h2>
