@@ -51,7 +51,6 @@ Desktop.ini
 
 # Vite / React build output
 Admin/dist/
-Frontend_Improved/dist/
 
 # Backend uploads or generated files
 Backend/uploads/
