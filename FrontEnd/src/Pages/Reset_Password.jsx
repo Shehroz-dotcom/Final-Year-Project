@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import Urls from '../utils/Urls.js';
-import AnimatedButton from './AnimatedButton.jsx';
+import AnimatedButton from "../Components/AnimatedButton.jsx"
 
 const Reset_Password = () => {
   const { token } = useParams();
@@ -27,7 +27,7 @@ const Reset_Password = () => {
 
     setLoading(true);
     try {
-      const response = await axios.put(
+      const response = await axios.post(
         `${Urls.dev}/api/v1/user/reset-password/${token}`,
         { password: data.password }
       );

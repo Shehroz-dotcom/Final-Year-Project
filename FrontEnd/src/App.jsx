@@ -51,12 +51,8 @@ const App = () => {
                     }
                   />
                   <Route
-                    path="/reset_Password:token"
-                    element={
-                      <ProtectedRoute>
-                        <Reset_Password />
-                      </ProtectedRoute>
-                    }
+                    path="/reset_Password/:token"
+                    element={<Reset_Password />}
                   />
                   <Route path="/forgetPassword" element={<Forget_Password />} />
                 </Routes>

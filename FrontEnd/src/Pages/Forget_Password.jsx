@@ -17,7 +17,7 @@ const Forget_Password = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        `${Urls.dev}/api/v1/user/forgetPassword`,
+        `${Urls.dev}/api/v1/user/forget-password`,
         data
       );
 

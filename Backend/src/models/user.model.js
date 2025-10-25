@@ -1,7 +1,7 @@
 import mongoose, { Schema } from 'mongoose';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
-import bycrypt from 'bcrypt';
+import bcrypt from 'bcrypt';
 
 const userSchema = new Schema(
   {
@@ -63,12 +63,12 @@ const userSchema = new Schema(
 //dont  user callback function as () => {}  in this have the current context that on which we want to run the encryption or any other functon
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
-  this.password = await bycrypt.hash(this.password, 10);
+  this.password = await bcrypt.hash(this.password, 10);
   next();
 });
 
 userSchema.methods.isPasswordCorrect = async function (password) {
-  return await bycrypt.compare(password, this.password);
+  return await bcrypt.compare(password, this.password);
 };
 
 userSchema.methods.generateAccessToken = function () {
@@ -103,7 +103,7 @@ userSchema.methods.generateResetPasswordToken = function () {
     .update(resetToken)
     .digest('hex');
   this.resetPasswordExpire = Date.now() + 15 * 60 * 1000; //15 min
-  return reset;
+  return resetToken;
 };
 
 const userModel = mongoose.model.user || mongoose.model('User', userSchema);
