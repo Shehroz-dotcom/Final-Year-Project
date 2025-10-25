@@ -39,13 +39,8 @@ const userSchema = new Schema(
         orderDate: Date,
       },
     ],
-    cartData: [
-      {
-        food: { type: Schema.Types.ObjectId, ref: 'Food' },
-        quantity: { type: Number, default: 1 },
-        note: { type: String },
-      },
-    ],
+   
+    
 
     password: {
       type: String,
