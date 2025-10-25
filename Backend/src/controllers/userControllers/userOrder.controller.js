@@ -4,7 +4,7 @@ import foodModel from '../../models/food.model.js';
 
 const userOrder = async (req, res) => {
   try {
-    // 🔐 Get JWT token from cookies
+    // 🔐 Extract JWT token
     const token = req.cookies.accessToken;
     if (!token) {
       return res
@@ -16,24 +16,21 @@ const userOrder = async (req, res) => {
     const decoded = JwtDecode(token);
     const userId = decoded._id;
 
-    // 🛒 Extract cart data and total price from request body
-    const cart = req.body.cart; // cart is an object { foodId: quantity }
-    const totalPrice = req.body.totalPrice;
-    
+    // 🛒 Extract order data
+    const { cart, totalPrice, totalCalories } = req.body;
 
     if (!cart || Object.keys(cart).length === 0) {
       return res.status(400).json({ message: 'Cart data missing' });
     }
 
-    // 👤 Find the user FIRST
+    // 👤 Verify user exists
     const user = await userModel.findById(userId);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // 📦 Prepare order data by fetching prices from the Food model
+    // 📦 Construct order items
     const orderEntries = [];
-
     for (const [foodId, quantity] of Object.entries(cart)) {
       const foodItem = await foodModel.findById(foodId);
       if (!foodItem) continue;
@@ -42,7 +39,7 @@ const userOrder = async (req, res) => {
         cartData: {
           food: foodItem._id,
           priceAtPurchase: foodItem.food_price,
-          quantity: quantity,
+          quantity,
           date: new Date(),
         },
       });
@@ -54,21 +51,22 @@ const userOrder = async (req, res) => {
         .json({ message: 'No valid food items found in cart' });
     }
 
-    // 🧾 Append new order to history
+    // 🧾 Append new order
     user.orderHistory.push({
       items: orderEntries,
-      totalPrice: totalPrice,
+      totalPrice,
+      totalCalories,
       orderDate: new Date(),
     });
 
-    // 💾 Save updated user data
     await user.save();
 
-    // ✅ Respond success
+    // ✅ Response
     res.status(200).json({
       message: '✅ Order saved successfully',
       orderCount: orderEntries.length,
-      totalPrice: totalPrice,
+      totalPrice,
+      totalCalories,
       orderHistory: user.orderHistory,
     });
   } catch (error) {

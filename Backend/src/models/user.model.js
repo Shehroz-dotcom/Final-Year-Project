@@ -36,6 +36,7 @@ const userSchema = new Schema(
           },
         ],
         totalPrice: Number,
+        totalCalories: Number,
         orderDate: Date,
       },
     ],

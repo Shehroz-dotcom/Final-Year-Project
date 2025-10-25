@@ -13,7 +13,7 @@ const FoodCard = ({ food }) => {
   // get quantity of this food from cart
   const quantity = cartItems?.[food._id] || 0;
 
-  const handleAdd = () => {
+  const handleAdd = (e) => {
     e.stopPropagation()
     if (!userData) {
       navigate('/login');

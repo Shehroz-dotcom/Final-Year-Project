@@ -9,44 +9,57 @@ const Cart = () => {
   const { foodData, getFood } = useContext(FoodContext);
   const { cartItems, removeFromCart, addToCart, removeItemCompletely } =
     useContext(CartContext);
+
   const [filteredFoods, setFilteredFoods] = useState([]);
+  const [totalPrice, setTotalPrice] = useState(0);
+  const [totalCalories, setTotalCalories] = useState(0);
 
   useEffect(() => {
     getFood();
   }, []);
 
   useEffect(() => {
-    if (foodData.length > 0 && cartItems && typeof cartItems === 'object') {
-      const filtered = foodData.filter((food) => cartItems[food._id]);
-      setFilteredFoods(filtered);
+    if (
+      !Array.isArray(foodData) ||
+      typeof cartItems !== 'object' ||
+      !cartItems
+    ) {
+      setFilteredFoods([]);
+      setTotalPrice(0);
+      setTotalCalories(0);
+      return;
     }
+
+    let filtered = [];
+    let priceSum = 0;
+    let calorieSum = 0;
+
+    for (const food of foodData) {
+      const qty = Number(cartItems[food._id]);
+      if (qty > 0) {
+        filtered.push(food);
+        const price = Number(food.food_price) || 0;
+        const calories = Number(food.calories) || 0;
+        priceSum += price * qty;
+        calorieSum += calories * qty;
+      }
+    }
+
+    setFilteredFoods(filtered);
+    setTotalPrice(priceSum);
+    setTotalCalories(calorieSum);
   }, [foodData, cartItems]);
 
-  // ✅ Calculate Total Price
-  const totalPrice = filteredFoods.reduce((acc, food) => {
-    const qty = Number(cartItems[food._id]) || 0;
-    const price = Number(food.food_price) || 0;
-    return acc + price * qty;
-  }, 0);
-
-  // ✅ Calculate Total Calories
-  const totalCalories = filteredFoods.reduce((acc, food) => {
-    const qty = Number(cartItems[food._id]) || 0;
-    const calories = Number(food.food_calories || 0); // assuming food has `food_calories` property
-    return acc + calories * qty;
-  }, 0);
-
-  // ✅ Place Order with Total Price + Calories
   const handlePlaceOrder = async () => {
     try {
       const payload = {
         cart: cartItems,
         totalPrice: totalPrice.toFixed(2),
-        
+        totalCalories
       };
 
       await axios.post(`${Urls.dev}/api/v1/user/order`, payload, {
-        withCredentials: true, // ✅ ensures cookies/JWT are sent
+        withCredentials: true,
       });
 
       sessionStorage.removeItem('cart');
@@ -79,7 +92,6 @@ const Cart = () => {
                     key={food._id}
                     className="flex items-center justify-between bg-zinc-900 border border-white/10 rounded-lg p-4"
                   >
-                    {/* Left - Image + Info */}
                     <div className="flex items-center gap-4">
                       <img
                         src={food.food_image_url || '/placeholder.jpg'}
@@ -93,11 +105,9 @@ const Cart = () => {
                         <p className="text-gray-400 text-sm">
                           PKR {price.toFixed(2)}
                         </p>
-                       
                       </div>
                     </div>
 
-                    {/* Right - Quantity + Remove */}
                     <div className="flex items-center gap-3">
                       <div className="flex items-center border border-white/20 rounded-md">
                         <button
@@ -139,18 +149,12 @@ const Cart = () => {
                 <span>Subtotal</span>
                 <span>PKR {totalPrice.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between">
-                <span>Taxes</span>
-                <span>PKR {(totalPrice * 0.08).toFixed(2)}</span>
-              </div>
+
               <div className="flex justify-between">
                 <span>Delivery</span>
                 <span>PKR 200</span>
               </div>
-              <div className="flex justify-between">
-                <span>Total Calories</span>
-                <span>{totalCalories} kcal</span>
-              </div>
+
               <div className="border-t border-white/20 my-2" />
               <div className="flex justify-between font-semibold text-green-400">
                 <span>Total</span>
