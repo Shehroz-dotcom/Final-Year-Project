@@ -30,7 +30,10 @@ const FoodDetails = () => {
 
   return (
     <div className="flex justify-center items-start py-6 sm:py-8 px-2 sm:px-4 lg:px-8">
-      <div className="text-white bg-gradient-to-br from-[#0d0d0d]/80 to-[#1a1a1a]/60 backdrop-blur-md rounded-xl shadow-2xl mx-auto w-full sm:w-[95%] lg:w-[80%] px-4 sm:px-6 lg:px-12 py-6 sm:py-10 border border-white/10 animate-fadeIn">
+      <div
+        className="text-white bg-gradient-to-br from-[#0d0d0d]/80 to-[#1a1a1a]/60 backdrop-blur-md rounded-xl shadow-2xl mx-auto w-full sm:w-[95%] lg:w-[80%] px-4 sm:px-6 lg:px-12 py-6 sm:py-10 border border-white/10 
+      animate-fadeIn"
+      >
         <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8 sm:gap-12">
           {/* Image */}
           <div className="w-full lg:w-1/2">
