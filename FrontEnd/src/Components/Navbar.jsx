@@ -163,7 +163,12 @@ const Navbar = () => {
           <ul className="hidden md:flex flex-col items-center justify-center mt-3 bg-black gap-2 list-none">
             {isLoggedIn ? (
               <>
-                <li className="text-white font-bold py-2 px-4 hover:bg-white hover:text-black  w-full text-center cursor-pointer  border-b-1  border-white">
+                <li
+                  className="text-white font-bold py-2 px-4 hover:bg-white hover:text-black  w-full text-center cursor-pointer  border-b-1  border-white"
+                  onClick={() => {
+                    setIsDropDownOpen(!isDropDownOpen)
+                    navigate(`/userProfile/${userData._id}`)}}
+                >
                   Profile
                 </li>
                 <li

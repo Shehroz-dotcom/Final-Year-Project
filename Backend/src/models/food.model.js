@@ -9,74 +9,113 @@ const FoodSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
       index: true,
-    }, // e.g. "Grilled Chicken Bowl"
+    },
 
     food_description: {
       type: String,
-      required: [true, 'description is required'],
-    }, // food description
+      required: [true, 'Description is required'],
+      trim: true,
+    },
 
     food_price: {
       type: Number,
-      required: [true, 'price is required'],
-    }, // price per serving
+      required: [true, 'Price is required'],
+    },
 
     food_image_url: {
       type: String,
-      required: [true, 'image url is requried'],
-    }, // image URL or path
+      required: [true, 'Image URL is required'],
+    },
 
     food_image_public_id: {
       type: String,
-      required: [true, 'image public id  is required'],
+      required: [true, 'Image public ID is required'],
     },
 
     food_category: {
       type: String,
-      required: [true, 'category  is required'],
+      required: [true, 'Category is required'],
+      index: true,
     }, // e.g. "Main Course", "Snacks"
 
     food_type: {
       type: String,
-      required: [true, 'type is required'],
+      required: [true, 'Food type is required'],
+      index: true,
     }, // e.g. "breakfast", "lunch", "dinner"
 
+    // Macronutrients per serving
     calories: {
-      type:Number,
-      required: [true, "calories are required"]
+      type: Number,
+      required: [true, 'Calories are required'],
     },
     serving_size_g: {
-      type:Number,
-      required:[true, "serving  required"]
+      type: Number,
+      required: [true, 'Serving size (g) is required'],
     },
-    // nutrition per serving (1 person)
     protein: {
       type: Number,
-      required: [true, 'protein is required'],
-    }, // grams
+      required: [true, 'Protein is required'],
+    },
     carbs: {
       type: Number,
-      required: [true, 'carbs are required'],
-    }, // grams
+      required: [true, 'Carbs are required'],
+    },
     fat: {
       type: Number,
-      required: [true, 'fat is required'],
-    }, // grams
+      required: [true, 'Fat is required'],
+    },
     fiber: {
       type: Number,
-      required: true,
-    }, // grams (optional)
+      required: [true, 'Fiber is required'],
+    },
     sugar: {
       type: Number,
-      required: true,
-    }, // grams (optional)
+      required: [true, 'Sugar is required'],
+    },
 
+    // Diet compatibility (filters meals for users with restrictions)
+      required: [true, 'Carbs are required'],
+
+
+    // // Allergen tracking
+    // allergens: [{ type: String }], // e.g. ["nuts", "dairy", "shellfish"]
+
+    // Micronutrients (for future expansion)
+    // micronutrients: {
+    //   sodium_mg: { type: Number, default: 0 },
+    //   potassium_mg: { type: Number, default: 0 },
+    //   iron_mg: { type: Number, default: 0 },
+    // },
+
+    // Computed fields (auto-calculated for AI logic)
+    calorie_density: {
+      type: Number,
+      default: function () {
+        return this.serving_size_g ? this.calories / this.serving_size_g : 0;
+      },
+    },
+    protein_ratio: {
+      type: Number,
+      default: function () {
+        const totalCalories = this.protein * 4 + this.carbs * 4 + this.fat * 9;
+        return totalCalories ? ((this.protein * 4) / totalCalories) * 100 : 0;
+      },
+    },
+
+    // Tags & metadata for recommendations
     tags: [{ type: String, required: true }], // e.g. ["high-protein", "low-carb"]
+    suitability: [{ type: String }], // e.g. ["post-workout", "low-calorie", "recovery"]
   },
-  { timestamps: true } // auto adds createdAt & updatedAt
+  { timestamps: true }
 );
 
-//write food aggregate pipelines (if needed )
+// ⚙️ Indexing for faster filtering
+FoodSchema.index({ tags: 1 });
+FoodSchema.index({ food_type: 1 });
+FoodSchema.index({ calories: 1 });
+FoodSchema.index({ diet_compatibility: 1 });
+FoodSchema.index({ suitability: 1 });
 
 const foodModel = mongoose.models.Food || mongoose.model('Food', FoodSchema);
 export default foodModel;

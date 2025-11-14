@@ -1,5 +1,6 @@
 import { memo, useContext, useEffect, useState } from 'react';
 import { FoodContext } from '../Context/FoodContext/FoodContext.jsx';
+import { toast } from 'react-toastify';
 import { CartContext } from '../Context/CartContext/CartContext.jsx';
 import Urls from '../utils/Urls.js';
 import axios from 'axios';
@@ -55,18 +56,30 @@ const Cart = () => {
       const payload = {
         cart: cartItems,
         totalPrice: totalPrice.toFixed(2),
-        totalCalories
+        totalCalories,
       };
 
       await axios.post(`${Urls.dev}/api/v1/user/order`, payload, {
         withCredentials: true,
       });
 
-      sessionStorage.removeItem('cart');
-      alert('🛒 Order placed successfully!');
+      await axios.post(`${Urls.dev}/api/v1/order/placeOrder`, payload, {
+        withCredentials: true,
+      });
+
+      toast.success('🛒 Order placed successfully!', {
+        position: 'top-right',
+        autoClose: 3000,
+      });
+      setTimeout(() => {
+        sessionStorage.removeItem('cart');
+      }, 100); // delay prevents unmount before toast renders
     } catch (error) {
       console.error('Order failed:', error);
-      alert('❌ Failed to place order. Try again.');
+      toast.error('❌ Failed to place order. Try again.', {
+        position: 'top-right',
+        autoClose: 3000,
+      });
     }
   };
 
@@ -175,6 +188,7 @@ const Cart = () => {
             <h3 className="text-lg font-semibold mb-3">Delivery Address</h3>
             <input
               type="text"
+              name="DeliveryAddress"
               placeholder="Enter your delivery address"
               className="w-full bg-transparent border border-white/20 rounded-md px-3 py-2 text-white outline-none focus:border-green-400 transition"
             />

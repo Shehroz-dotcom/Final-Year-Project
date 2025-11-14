@@ -9,6 +9,7 @@ import Register from './Pages/Register.jsx';
 import Cart from './Pages/Cart.jsx';
 import UserContextProvider from './Context/UserContext/UserContext.jsx';
 import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // ✅ REQUIRED
 import FoodContextProvider from './Context/FoodContext/FoodContext.jsx';
 import CartContextProvider from './Context/CartContext/CartContext.jsx';
 import ProtectedRoute from './Components/ProtectedRoute.jsx';
@@ -17,53 +18,67 @@ import Contact from './Pages/Contact.jsx';
 import FoodDetails from './Pages/FoodDetails.jsx';
 import Forget_Password from './Pages/Forget_Password.jsx';
 import Reset_Password from './Pages/Reset_Password.jsx';
+import UserProfilePage from './Pages/UserProfilePage.jsx';
+
 const App = () => {
   return (
-    <div>
-      <AuthProvider>
-        <FoodContextProvider>
-          <CartContextProvider>
-            <UserContextProvider>
-              {/* Navbar */}
-              <Navbar />
-              <main
-                className="min-h-screen bg-cover bg-center bg-no-repeat bg-fixed border-none px-8 lg:px-20 py-15"
-                style={{ backgroundImage: `url(${bg})` }}
-              >
-                <ToastContainer />
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/food/:id" element={<FoodDetails />} />
-                  <Route
-                    path="/forget_Password"
-                    element={<Forget_Password />}
-                  />
+    <AuthProvider>
+      <FoodContextProvider>
+        <CartContextProvider>
+          <UserContextProvider>
+            <Navbar />
+            <ToastContainer
+              position="top-right"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop
+              closeOnClick
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="dark"
+            />
+            <main
+              className="min-h-screen bg-cover bg-center bg-no-repeat bg-fixed border-none px-8 lg:px-20 py-15"
+              style={{ backgroundImage: `url(${bg})` }}
+            >
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/food/:id" element={<FoodDetails />} />
+                <Route path="/forget_Password" element={<Forget_Password />} />
+                <Route
+                  path="/cart"
+                  element={
+                    <ProtectedRoute>
+                      <Cart />
+                    </ProtectedRoute>
+                  }
+                />
 
                   <Route
-                    path="/cart"
-                    element={
-                      <ProtectedRoute>
-                        <Cart />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/reset_Password/:token"
-                    element={<Reset_Password />}
-                  />
-                  <Route path="/forgetPassword" element={<Forget_Password />} />
-                </Routes>
-              </main>
-              {/* footer */}
-              <Footer />
-            </UserContextProvider>
-          </CartContextProvider>
-        </FoodContextProvider>
-      </AuthProvider>
-    </div>
+                  path="/userProfile/:id"
+                  element={
+                    <ProtectedRoute>
+                      <UserProfilePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/reset_Password/:token"
+                  element={<Reset_Password />}
+                />
+                <Route path="/forgetPassword" element={<Forget_Password />} />
+              </Routes>
+            </main>
+            <Footer />
+            {/* ✅ Toast container goes here */}
+          </UserContextProvider>
+        </CartContextProvider>
+      </FoodContextProvider>
+    </AuthProvider>
   );
 };
 

@@ -1,7 +1,12 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import { foodRouter, userRouter, AuthRouter } from './routes/index.js';
+import {
+  foodRouter,
+  userRouter,
+  AuthRouter,
+  orderRouter,
+} from './routes/index.js';
 
 const app = express();
 
@@ -36,6 +41,7 @@ app.use('/api/v1/food', foodRouter);
 //user routes
 app.use('/api/v1/user', userRouter);
 app.use('/api/v1/auth', AuthRouter);
+app.use('/api/v1/order', orderRouter);
 
 app.get('/', (req, res) => {
   res.send('Api working');
