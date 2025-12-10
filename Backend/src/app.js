@@ -6,6 +6,7 @@ import {
   userRouter,
   AuthRouter,
   orderRouter,
+  reviewRouter
 } from './routes/index.js';
 
 const app = express();
@@ -42,6 +43,7 @@ app.use('/api/v1/food', foodRouter);
 app.use('/api/v1/user', userRouter);
 app.use('/api/v1/auth', AuthRouter);
 app.use('/api/v1/order', orderRouter);
+app.use('/api/v1/review', reviewRouter);
 
 app.get('/', (req, res) => {
   res.send('Api working');

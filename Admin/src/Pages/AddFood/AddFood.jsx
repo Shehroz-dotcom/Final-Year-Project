@@ -268,6 +268,22 @@ const AddFood = () => {
           ))}
         </div>
 
+        {/* Suitability */}
+        <div className="mb-6">
+          <label className="block text-white font-medium mb-1">
+            Suitability
+          </label>
+          <input
+            type="text"
+            {...register("suitability")}
+            placeholder="e.g. post-workout, low-calorie, recovery"
+            className="w-full px-3 py-2 rounded-md bg-white/20 border border-white/40 text-white"
+          />
+          <p className="text-xs text-white/60 mt-1">
+            Separate multiple suitability tags with commas.
+          </p>
+        </div>
+
         {/* Tags */}
         <div className="mb-6">
           <label className="block text-white font-medium mb-1">Tags</label>

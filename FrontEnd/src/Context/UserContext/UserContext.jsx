@@ -72,8 +72,8 @@ const UserContextProvider = ({ children }) => {
         setUserData(null);
         console.log('✅ User logged out');
         // Optional: redirect
-        sessionStorage.removeItem('User');
-        sessionStorage.removeItem("cart")
+       
+        sessionStorage.clear()
         window.location.href = '/login';
       }
     } catch (error) {

@@ -19,19 +19,6 @@ const userSchema = new Schema(
       index: true,
     },
 
-    // 🩺 Google Fit Integration Data
-    googleFit: {
-      userId: { type: String, default: null },
-      caloriesExpended: { type: Number, default: 0 },
-      steps: { type: Number, default: 0 },
-      weight: { type: Number, default: 0 },
-      height: { type: Number, default: 0 },
-      bodyFatPercentage: { type: Number, default: 0 },
-      sleepHours: { type: Number, default: 0 },
-      heartRate: { type: Number, default: 0 },
-      lastSynced: { type: Date, default: Date.now },
-    },
-
     // 🍽️ Meal Tracking Data
     nutritionLog: [
       {
@@ -43,13 +30,12 @@ const userSchema = new Schema(
       },
     ],
 
-    // 🥗 Dietary Preferences & Allergy Awareness (new)
+    // 🥗 Dietary Preferences
     dietPreference: {
       type: String,
       enum: ['omnivore', 'vegetarian', 'vegan', 'keto', 'paleo', 'gluten-free'],
       default: 'omnivore',
     },
-    allergies: [{ type: String }], // e.g. ["nuts", "dairy", "shellfish"]
 
     // 🧾 Order History
     orderHistory: [
@@ -132,7 +118,6 @@ userSchema.methods.getRecommendedFoods = async function () {
   const Food = mongoose.model('Food');
   return await Food.find({
     diet_compatibility: { $in: [this.dietPreference] },
-    allergens: { $nin: this.allergies },
   });
 };
 

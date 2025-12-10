@@ -2,12 +2,19 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useContext, useEffect, useState } from 'react';
 import { FoodContext } from '../Context/FoodContext/FoodContext.jsx';
 import { CartContext } from '../Context/CartContext/CartContext.jsx';
+import { UserContext } from '../Context/UserContext/UserContext.jsx';
+import ReviewForm from '../Components/ReviewForm.jsx';
+import ReviewList from '../Components/ReviewList.jsx';
 
 const FoodDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { foodData } = useContext(FoodContext);
   const { addToCart } = useContext(CartContext);
+  const { userData } = useContext(UserContext);
+
+  const userName = userData?.fullName;
+
 
   const [food, setFood] = useState(null);
 
@@ -24,7 +31,15 @@ const FoodDetails = () => {
     );
   }
 
-  const handleAddToCart = () => addToCart(food._id);
+  const handleAddToCart = () => {
+    if (!userData) {
+      navigate('/login');
+      return;
+    }
+    addToCart(food._id);
+  };
+
+  
 
   const relatedFoods = foodData.slice(0, 4).filter((item) => item._id !== id);
 
@@ -79,21 +94,6 @@ const FoodDetails = () => {
               </div>
             </div>
 
-            {/* Customer Reviews */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-yellow-400 mb-2">
-                Customer Reviews
-              </h3>
-              <div className="flex items-center mb-2">
-                <span className="text-yellow-400 text-xl">★★★★★</span>
-                <p className="ml-2 text-gray-400 text-sm">(4.8 / 5)</p>
-              </div>
-              <p className="text-gray-300 text-sm italic">
-                “Absolutely delicious and full of flavor. Portion was generous
-                and worth every bite!”
-              </p>
-            </div>
-
             <button
               onClick={handleAddToCart}
               className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded transition-all duration-300 w-fit cursor-pointer"
@@ -103,6 +103,34 @@ const FoodDetails = () => {
           </div>
         </div>
 
+        {/* Customer Reviews */}
+
+        {userName ? (
+          <ReviewForm foodId={id} userName={userName} />
+        ) : (
+          <p className=" border border-green-400 p-4 mt-4">
+            Please login to review.
+          </p>
+        )}
+
+        <div className="my-6">
+          <h1
+            className="
+                  font-bold 
+                  text-yellow-400
+                  text-2xl        /* phones */
+                  sm:text-2xl     /* small screens */
+                  md:text-2xl     /* tablets */
+                  lg:text-2xl     /* laptops */
+                  xl:text-2xl     /* large desktops */
+                  tracking-wide"
+          >
+            Customer Reviews
+          </h1>
+        </div>
+        <ReviewList  reviews= {food.userReviews}/>
+    
+        
         {/* Related Foods */}
         {relatedFoods.length > 0 && (
           <div className="mt-12 sm:mt-16">

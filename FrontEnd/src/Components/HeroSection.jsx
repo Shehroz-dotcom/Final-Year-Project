@@ -3,10 +3,12 @@ import foodImage from '../assets/paul-lichtblau-13khUlRITD8-unsplash.jpg';
 import { AuthContext } from '../Context/AuthContext/AuthContext';
 
 const HeroSection = () => {
-  const {chechAuth} = useContext(AuthContext)
-  useEffect(()=>{
-    chechAuth
-  })
+  //checking auth for what ?
+
+  const { chechAuth } = useContext(AuthContext);
+  useEffect(() => {
+    chechAuth;
+  });
   return (
     <div className="w-full h-[70vh] rounded-md flex bg-[#0d0d0d]/40 backdrop-blur-md shadow-2xl overflow-hidden">
       {/* Left Side (Text Section) */}

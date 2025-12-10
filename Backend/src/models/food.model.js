@@ -75,8 +75,6 @@ const FoodSchema = new mongoose.Schema(
     },
 
     // Diet compatibility (filters meals for users with restrictions)
-      required: [true, 'Carbs are required'],
-
 
     // // Allergen tracking
     // allergens: [{ type: String }], // e.g. ["nuts", "dairy", "shellfish"]
@@ -89,6 +87,31 @@ const FoodSchema = new mongoose.Schema(
     // },
 
     // Computed fields (auto-calculated for AI logic)
+    userReviews: [
+      {
+       
+        rating: {
+          type: Number,
+          required: true,
+          min: 1,
+          max: 5,
+        },
+        reviewerName: {
+          type: String,
+          required: [true, "UserName  is required "],
+        },
+        date: {
+          type: Date,
+          default: Date.now,
+        },
+        review: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+      },
+    ],
+
     calorie_density: {
       type: Number,
       default: function () {
@@ -102,6 +125,19 @@ const FoodSchema = new mongoose.Schema(
         return totalCalories ? ((this.protein * 4) / totalCalories) * 100 : 0;
       },
     },
+    diet_compatibility: [
+      {
+        type: String,
+        enum: [
+          'omnivore',
+          'vegetarian',
+          'vegan',
+          'keto',
+          'paleo',
+          'gluten-free',
+        ],
+      },
+    ],
 
     // Tags & metadata for recommendations
     tags: [{ type: String, required: true }], // e.g. ["high-protein", "low-carb"]
