@@ -17,6 +17,19 @@ const userSchema = new Schema(
       required: true,
       trim: true,
       index: true,
+  },
+
+    address: {
+      type: String,
+      required: true,
+      trim: true,
+      index: true,
+    },
+    phoneNo: {
+      type: String,
+      required: true,
+      trim: true,
+      index: true,
     },
 
     // 🍽️ Meal Tracking Data

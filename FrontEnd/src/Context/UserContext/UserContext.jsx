@@ -37,7 +37,7 @@ const UserContextProvider = ({ children }) => {
         credentials,
         { withCredentials: true }
       );
-      //sesstion storage
+      //sesstion storagecont
 
       if (response.data.success) {
         setUserData(response.data.user);

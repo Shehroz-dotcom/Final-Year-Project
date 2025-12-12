@@ -8,6 +8,7 @@ import { FaTimes } from 'react-icons/fa';
 
 const Cart = () => {
   const { foodData, getFood } = useContext(FoodContext);
+
   const { cartItems, removeFromCart, addToCart, removeItemCompletely } =
     useContext(CartContext);
 
@@ -54,6 +55,8 @@ const Cart = () => {
   const handlePlaceOrder = async () => {
     try {
       const payload = {
+        name,
+        address,
         cart: cartItems,
         totalPrice: totalPrice.toFixed(2),
         totalCalories,
@@ -66,6 +69,7 @@ const Cart = () => {
       await axios.post(`${Urls.dev}/api/v1/order/placeOrder`, payload, {
         withCredentials: true,
       });
+      console.log(response);
 
       toast.success('🛒 Order placed successfully!', {
         position: 'top-right',

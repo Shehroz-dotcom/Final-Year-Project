@@ -4,4 +4,5 @@ import { userLogout } from './userLogout.controller.js';
 import { userOrder } from './userOrder.controller.js';
 import { ForgetPassword } from './ForgetPassword.controller.js.js';
 import { ResetPassword } from './ResetPassword.controller.js';
-export { registerUser, userLogin, userLogout, userOrder, ForgetPassword , ResetPassword};
+import {updateUserProfile} from "./updateUserProfile.controller.js"
+export { registerUser, userLogin, userLogout, userOrder, ForgetPassword , ResetPassword , updateUserProfile};

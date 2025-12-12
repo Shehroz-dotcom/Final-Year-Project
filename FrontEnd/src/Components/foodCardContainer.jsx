@@ -45,7 +45,6 @@ const FoodCardContainer = () => {
     setFilters((prev) => ({
       ...prev,
       [name]: value,
-      
     }));
   };
 
@@ -148,11 +147,13 @@ const FoodCardContainer = () => {
       </div>
 
       {/* ✅ Food Cards Section */}
-      <div className="w-full h-auto mt-6 flex flex-col items-center gap-6 md:flex-row md:flex-wrap md:justify-start">
+      <div className="w-full h-auto mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 justify-items-center">
         {filteredFoods.length > 0 ? (
           filteredFoods.map((food) => <FoodCard key={food._id} food={food} />)
         ) : (
-          <p className=" mt-10 text-white font-bold">No items match your filters.</p>
+          <p className=" mt-10 text-white font-bold">
+            No items match your filters.
+          </p>
         )}
       </div>
     </div>

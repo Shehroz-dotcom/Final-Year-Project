@@ -75,7 +75,10 @@ const Navbar = () => {
                 {/* Profile placeholder */}
                 <div className="w-auto h-auto rounded-md flex items-center justify-center select-none text-black bg-white px-4 py-2 font-bold cursor-pointer">
                   {/* Mobile: first letter only */}
-                  <span className="block sm:hidden">
+                  <span
+                    className="block sm:hidden cursor-pointer"
+                    onClick={() => navigate(`/userProfile`)}
+                  >
                     {userData?.fullName?.charAt(0).toUpperCase()}
                   </span>
                   {/* carticons */}
@@ -164,13 +167,15 @@ const Navbar = () => {
             {isLoggedIn ? (
               <>
                 <li
-                  className="text-white font-bold py-2 px-4 hover:bg-white hover:text-black  w-full text-center cursor-pointer  border-b-1  border-white"
+                  className="text-white font-bold py-2 px-4 hover:bg-white hover:text-black w-full text-center cursor-pointer border-b-1 border-white"
                   onClick={() => {
-                    setIsDropDownOpen(!isDropDownOpen)
-                    navigate(`/userProfile/${userData._id}`)}}
+                    setIsDropDownOpen(false);
+                    navigate('/userProfile'); // removed ID
+                  }}
                 >
                   Profile
                 </li>
+
                 <li
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="w-full text-center border-b border-white"
@@ -219,7 +224,10 @@ const Navbar = () => {
               <>
                 <li
                   className="text-white font-semibold px-6 py-2 rounded hover:bg-white hover:text-black cursor-pointer w-full max-w-xs text-center"
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    navigate('/userProfile'); // Navigate to profile without ID
+                  }}
                 >
                   Profile
                 </li>
@@ -232,11 +240,13 @@ const Navbar = () => {
                     Cart
                   </Link>
                 </li>
+
                 <li
                   className="text-white font-semibold px-6 py-2 rounded hover:bg-white hover:text-black cursor-pointer w-full max-w-xs text-center"
                   onClick={() => {
                     setIsLoggedIn(false);
                     setIsMobileMenuOpen(false);
+                    handleAuth(); // Call logout function if needed
                   }}
                 >
                   Logout
@@ -246,7 +256,10 @@ const Navbar = () => {
               <>
                 <li
                   className="text-white font-semibold px-6 py-2 rounded hover:bg-white hover:text-black cursor-pointer w-full max-w-xs text-center"
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    navigate('/');
+                  }}
                 >
                   Home
                 </li>
@@ -258,14 +271,12 @@ const Navbar = () => {
                 </li>
                 <li
                   className="text-white font-semibold px-6 py-2 rounded hover:bg-white hover:text-black cursor-pointer w-full max-w-xs text-center"
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    navigate('/contact');
+                  }}
                 >
-                  <Link
-                    to="/contact"
-                    className="block w-full h-full text-inherit"
-                  >
-                    Contact
-                  </Link>
+                  Contact
                 </li>
               </>
             )}

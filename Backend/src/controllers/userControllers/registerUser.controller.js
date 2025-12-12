@@ -3,15 +3,18 @@ import { generateAccessToken } from '../../utils/TokenGenerator/generateAccessTo
 import { generateRefreshToken } from '../../utils/TokenGenerator/generateRefreshToken.js';
 
 const registerUser = async (req, res) => {
-  const { fullName, email, password } = req.body;
+  const { fullName, email, password, address, phoneNo } = req.body;
 
   try {
-    if (!fullName || !email || !password) {
+    // Required fields validation
+    if (!fullName || !email || !password || !address || !phoneNo) {
       return res.status(400).json({
         success: false,
         message: 'All fields are required',
       });
     }
+
+    // Email uniqueness check
     const existedUser = await userModel.findOne({ email });
     if (existedUser) {
       return res.status(409).json({
@@ -20,10 +23,13 @@ const registerUser = async (req, res) => {
       });
     }
 
+    // Create new user
     const newUser = await userModel.create({
       fullName,
       email,
       password,
+      address,
+      phoneNo,
     });
 
     const createdUser = await userModel
@@ -33,18 +39,16 @@ const registerUser = async (req, res) => {
     if (!createdUser) {
       return res.status(500).json({
         success: false,
-        message: 'something went wrong while creating a user',
+        message: 'Something went wrong while creating the user',
       });
     }
 
+    // Generate tokens
     const { accessToken } = await generateAccessToken(newUser._id);
     const { refreshToken } = await generateRefreshToken(newUser._id);
-   
 
     const options = {
-      //by default any one can modify your cokies from frontend but when you introduce httpOnly then only from server the cookies can be modified
       httpOnly: true,
-      //secure: true only in production Https
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
     };
@@ -55,14 +59,15 @@ const registerUser = async (req, res) => {
       .cookie('refreshToken', refreshToken, options)
       .json({
         success: true,
-        message: 'user Created Successfully',
+        message: 'User created successfully',
         user: createdUser,
       });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: error,
+      message: error.message || 'Internal server error',
     });
   }
 };
+
 export { registerUser };
