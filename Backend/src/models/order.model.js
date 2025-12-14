@@ -1,32 +1,46 @@
-import mongoose from 'mongoose';
-
+import mongoose from "mongoose";
 const orderSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: [true, 'User ID is required'],
+  name: {
+    type: String,
+    required: true,
   },
 
   items: [
     {
-      productId: {
+      foodId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product',
+        ref: 'Food',
         required: true,
       },
-      quantity: { type: Number, required: true },
-      price: { type: Number, required: true },
+      foodName: {
+        type: String,
+        required: true,
+      },
+      quantity: {
+        type: Number,
+        required: true,
+      },
+      price: {
+        // price per single dish at order time
+        type: Number,
+        required: true,
+      },
+      total: {
+        // price * quantity
+        type: Number,
+        required: true,
+      },
     },
   ],
 
   amount: {
     type: Number,
-    required: [true, 'Amount is required'],
+    required: true,
   },
 
   address: {
     type: String,
-    required: [true, 'Address is required'],
+    required: true,
   },
 
   status: {
@@ -34,14 +48,14 @@ const orderSchema = new mongoose.Schema({
     default: 'Food Processing',
   },
 
-  date: {
-    type: Date,
-    default: Date.now, // ✅ Function reference, not `Date.Now()`
-  },
-
   payment: {
     type: Boolean,
     default: false,
+  },
+
+  date: {
+    type: Date,
+    default: Date.now,
   },
 });
 

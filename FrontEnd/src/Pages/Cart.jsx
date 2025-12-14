@@ -1,5 +1,6 @@
 import { memo, useContext, useEffect, useState } from 'react';
 import { FoodContext } from '../Context/FoodContext/FoodContext.jsx';
+import { UserContext } from '../Context/UserContext/UserContext.jsx';
 import { toast } from 'react-toastify';
 import { CartContext } from '../Context/CartContext/CartContext.jsx';
 import Urls from '../utils/Urls.js';
@@ -8,9 +9,18 @@ import { FaTimes } from 'react-icons/fa';
 
 const Cart = () => {
   const { foodData, getFood } = useContext(FoodContext);
+  const { userData } = useContext(UserContext);
+  const address = userData.address;
+  const name = userData.fullName;
+  console.log(address, name);
 
-  const { cartItems, removeFromCart, addToCart, removeItemCompletely } =
-    useContext(CartContext);
+  const {
+    cartItems,
+    addToCart,
+    removeFromCart,
+    removeItemCompletely,
+    clearCart,
+  } = useContext(CartContext);
 
   const [filteredFoods, setFilteredFoods] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
@@ -62,25 +72,28 @@ const Cart = () => {
         totalCalories,
       };
 
-      await axios.post(`${Urls.dev}/api/v1/user/order`, payload, {
-        withCredentials: true,
-      });
+      console.log('Placing order with payload:', payload);
 
-      await axios.post(`${Urls.dev}/api/v1/order/placeOrder`, payload, {
-        withCredentials: true,
-      });
-      console.log(response);
+      const response = await axios.post(
+        `${Urls.dev}/api/v1/order/placeOrder`,
+        payload,
+        { withCredentials: true }
+      );
 
-      toast.success('🛒 Order placed successfully!', {
-        position: 'top-right',
-        autoClose: 3000,
-      });
-      setTimeout(() => {
-        sessionStorage.removeItem('cart');
-      }, 100); // delay prevents unmount before toast renders
+      // ✅ Only show success if backend confirms
+      if (response.data?.success) {
+        toast.success('🛒 Order placed successfully!', {
+          position: 'top-right',
+          autoClose: 3000,
+        });
+
+        clearCart(); // clears both React state and sessionStorage
+      } else {
+        throw new Error(response.data?.message || 'Unknown server error');
+      }
     } catch (error) {
       console.error('Order failed:', error);
-      toast.error('❌ Failed to place order. Try again.', {
+      toast.error(`❌ Failed to place order: ${error.message}`, {
         position: 'top-right',
         autoClose: 3000,
       });

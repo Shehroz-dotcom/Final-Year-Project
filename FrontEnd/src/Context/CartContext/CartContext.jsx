@@ -1,60 +1,61 @@
-import { createContext, useState, useEffect, useContext } from 'react';
+import { createContext, useState } from 'react';
+
 export const CartContext = createContext();
 
 const CartContextProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState({});
 
-  const addToCart = async (itemId) => {
+  const addToCart = (itemId) => {
     setCartItems((prevCart) => {
-      const updateCart = { ...prevCart };
-
-      if (updateCart[itemId]) {
-        updateCart[itemId] = updateCart[itemId] + 1;
-      } else {
-        updateCart[itemId] = 1;
-      }
-
-      sessionStorage.setItem('cart', JSON.stringify(updateCart));
-      return updateCart;
+      const updatedCart = { ...prevCart };
+      updatedCart[itemId] = (updatedCart[itemId] || 0) + 1;
+      sessionStorage.setItem('cart', JSON.stringify(updatedCart));
+      return updatedCart;
     });
   };
 
-  const removeFromCart = async (itemId) => {
+  const removeFromCart = (itemId) => {
     setCartItems((prevCart) => {
-      const updateCart = { ...prevCart };
-      if (updateCart[itemId]) {
-        if (updateCart[itemId] > 1) {
-          updateCart[itemId] = updateCart[itemId] - 1;
+      const updatedCart = { ...prevCart };
+      if (updatedCart[itemId]) {
+        if (updatedCart[itemId] > 1) {
+          updatedCart[itemId] -= 1;
         } else {
-          delete updateCart[itemId];
+          delete updatedCart[itemId];
         }
       }
-      sessionStorage.setItem('cart', JSON.stringify(updateCart));
-      return updateCart;
+      sessionStorage.setItem('cart', JSON.stringify(updatedCart));
+      return updatedCart;
     });
   };
 
-  // 🆕 New function → Completely remove an item from cart
-  const removeItemCompletely = async (itemId) => {
+  const removeItemCompletely = (itemId) => {
     setCartItems((prevCart) => {
-      const updateCart = { ...prevCart };
-      delete updateCart[itemId]; // delete no matter the quantity
-      sessionStorage.setItem('cart', JSON.stringify(updateCart));
-      return updateCart;
+      const updatedCart = { ...prevCart };
+      delete updatedCart[itemId];
+      sessionStorage.setItem('cart', JSON.stringify(updatedCart));
+      return updatedCart;
     });
   };
 
-  const totalCartItems = Object.values(cartItems || {}).reduce(
+  // ✅ New function to clear the entire cart
+  const clearCart = () => {
+    setCartItems({});
+    sessionStorage.removeItem('cart');
+  };
+
+  const totalCartItems = Object.values(cartItems).reduce(
     (total, qty) => total + qty,
     0
   );
 
   const ContextValue = {
+    cartItems,
     addToCart,
     removeFromCart,
-    removeItemCompletely, // 👈 expose new function
+    removeItemCompletely,
+    clearCart, // ✅ expose this
     totalCartItems,
-    cartItems,
   };
 
   return (
