@@ -1,4 +1,3 @@
-import React from 'react';
 import axios from 'axios';
 import { useForm } from 'react-hook-form';
 import { FaStar } from 'react-icons/fa';
@@ -56,7 +55,7 @@ const ReviewForm = ({ foodId, userName }) => {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       {/* Rating */}
-      <label className="text-amber-400 font-bold text-2xl">Rating</label>
+      <label className="text-amber-400 font-bold text-2xl mt-4">Rating</label>
       <div className="flex space-x-2 mb-4">
         {[1, 2, 3, 4, 5].map((star) => (
           <button

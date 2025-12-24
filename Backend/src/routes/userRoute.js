@@ -6,7 +6,8 @@ import {
   userOrder,
   ForgetPassword,
   ResetPassword,
-  updateUserProfile
+  updateUserProfile,
+  saveNutrition,
 } from '../controllers/userControllers/index.js';
 
 const userRouter = Router();
@@ -16,7 +17,8 @@ userRouter.route('/login').post(userLogin);
 userRouter.route('/logout').post(userLogout);
 userRouter.route('/order').post(userOrder);
 userRouter.route('/forget-password').post(ForgetPassword);
-userRouter.route('/reset-password/:token').post(ResetPassword)
-userRouter.route('/updateUserProfile/:id').post(updateUserProfile)
+userRouter.route('/reset-password/:token').post(ResetPassword);
+userRouter.route('/updateUserProfile/:id').post(updateUserProfile);
+userRouter.route('/saveNutritions').post(saveNutrition)
 
 export { userRouter };

@@ -6,6 +6,7 @@ import { CartContext } from '../Context/CartContext/CartContext.jsx';
 import Urls from '../utils/Urls.js';
 import axios from 'axios';
 import { FaTimes } from 'react-icons/fa';
+import { saveNutrition } from '../../../Backend/src/controllers/userControllers/saveNutrition.controller.js';
 
 const Cart = () => {
   const { foodData, getFood } = useContext(FoodContext);
@@ -15,6 +16,7 @@ const Cart = () => {
   console.log(address, name);
 
   const {
+    // here i have all the order food id's which i can use by sending to backend api and getting the food details  and geting its nutrition and saving for the user
     cartItems,
     addToCart,
     removeFromCart,
@@ -62,6 +64,12 @@ const Cart = () => {
     setTotalCalories(calorieSum);
   }, [foodData, cartItems]);
 
+  // const sendNutritionsData = async() => {
+  //   console.log("nutrition data function");
+  //   const response =  await axios.post(`${Urls.dev}/api/v1/user/saveNutritions` , {cartItems} , {withCredentials: true})
+
+    
+  // }
   const handlePlaceOrder = async () => {
     try {
       const payload = {
@@ -71,8 +79,6 @@ const Cart = () => {
         totalPrice: totalPrice.toFixed(2),
         totalCalories,
       };
-
-      console.log('Placing order with payload:', payload);
 
       const response = await axios.post(
         `${Urls.dev}/api/v1/order/placeOrder`,
@@ -194,7 +200,9 @@ const Cart = () => {
           </div>
 
           <button
-            onClick={handlePlaceOrder}
+            onClick={() => {
+              handlePlaceOrder()  
+            }}
             className="w-full bg-white text-black font-semibold py-3 rounded-md hover:bg-green-400 transition"
           >
             Checkout

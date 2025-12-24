@@ -10,11 +10,10 @@ const FoodCard = ({ food }) => {
   const { addToCart, removeFromCart, cartItems } = useContext(CartContext);
   const navigate = useNavigate();
 
-  // get quantity of this food from cart
   const quantity = cartItems?.[food._id] || 0;
 
   const handleAdd = (e) => {
-    e.stopPropagation()
+    e.stopPropagation();
     if (!userData) {
       navigate('/login');
       return;
@@ -22,75 +21,90 @@ const FoodCard = ({ food }) => {
     addToCart(food._id);
   };
 
-  const handleRemove = () => {
-    e.stopPropagation()
+  const handleRemove = (e) => {
+    e.stopPropagation();
     removeFromCart(food._id);
   };
 
-  // ✅ Calculate calories (per serving only)
   const protein = Number(food?.protein) || 0;
   const carbs = Number(food?.carbs) || 0;
   const fats = Number(food?.fats) || 0;
-
-  // 4, 4, and 9 are the kcal per gram of protein, carbs, and fat respectively
-  const calories = (protein * 4 + carbs * 4 + fats * 9) * 1; // *1 = per serving
+  const calories = protein * 4 + carbs * 4 + fats * 9;
 
   return (
-    <div className="w-80 rounded-lg bg-[#0d0d0d]/80 backdrop-blur-md shadow-lg flex flex-col h-auto transition-transform duration-300 hover:scale-[1.02] hover:shadow-xl" onClick={() => navigate(`/food/${food._id}`)}>
-      {/* 🖼️ Image Section */}
-      <div className="relative cursor-pointer">
+    <div
+      className="
+        w-full
+        rounded-lg
+        bg-[#0d0d0d]/80
+        backdrop-blur-md
+        shadow-lg
+        flex
+        flex-col
+        transition
+        hover:shadow-xl
+      "
+      onClick={() => navigate(`/food/${food._id}`)}
+    >
+      {/* 🖼 Image */}
+      <div className="relative w-full aspect-[4/3] overflow-hidden rounded-t-lg">
         <img
           src={food.food_image_url || foodImage}
           alt={food.food_name}
-          className="w-full h-48 object-cover rounded-t-md"
+          className="w-full h-full object-cover"
         />
 
-        {/* Add/Remove buttons */}
         {quantity === 0 ? (
           <IoIosAdd
             onClick={handleAdd}
-            className="absolute bottom-2 right-2 text-3xl text-black bg-white rounded-full p-1 cursor-pointer hover:bg-green-400 hover:scale-110 transition-transform duration-300 font-bold "
+            className="
+              absolute bottom-2 right-2
+              text-3xl
+              text-black
+              bg-white
+              rounded-full
+              p-1
+              cursor-pointer
+              hover:bg-green-400
+              transition
+            "
           />
         ) : (
-          <div className="absolute bottom-2 right-2 flex items-center gap-2 bg-black/50 px-3 py-1 rounded-md">
+          <div className="absolute bottom-2 right-2 flex items-center gap-2 bg-black/60 px-3 py-1 rounded-md">
             <IoIosRemove
               onClick={handleRemove}
-              className="text-2xl text-white cursor-pointer hover:text-red-400 transition"
+              className="text-2xl text-white cursor-pointer hover:text-red-400"
             />
             <span className="text-white font-bold">{quantity}</span>
             <IoIosAdd
               onClick={handleAdd}
-              className="text-2xl text-white cursor-pointer hover:text-green-400 transition"
+              className="text-2xl text-white cursor-pointer hover:text-green-400"
             />
           </div>
         )}
       </div>
 
-      {/* 🧾 Content Section */}
-      <div className="p-4 flex flex-col justify-between text-white">
-        <h2 className="text-lg sm:text-xl font-bold text-[#f9f6f2]">
-          {food.food_name}
-        </h2>
+      {/* 🧾 Content */}
+      <div className="p-4 flex flex-col gap-2 text-white">
+        <h2 className="text-lg font-bold text-[#f9f6f2]">{food.food_name}</h2>
 
-        <p className="mt-2 text-sm text-[#c9c9c9] line-clamp-3">
+        <p className="text-sm text-[#c9c9c9] line-clamp-3">
           {food.food_description}
         </p>
 
-        <p className="mt-2 text-[#02b11f] font-semibold">
+        <p className="text-[#02b11f] font-semibold">
           PKR {Number(food.food_price).toFixed(2)}
         </p>
 
-        {/* 🍽️ Nutrition Info */}
-        <div className="mt-2 text-xs sm:text-sm text-gray-300 flex flex-wrap gap-x-4 gap-y-1">
-          {food?.protein && <p>Protein: {protein}g</p>}
-          {food?.carbs && <p>Carbs: {carbs}g</p>}
-          {food?.fats && <p>Fats: {fats}g</p>}
+        <div className="text-xs sm:text-sm text-gray-300 flex flex-wrap gap-x-4 gap-y-1">
+          {protein > 0 && <p>Protein: {protein}g</p>}
+          {carbs > 0 && <p>Carbs: {carbs}g</p>}
+          {fats > 0 && <p>Fats: {fats}g</p>}
           {food?.fiber && <p>Fiber: {food.fiber}g</p>}
           {food?.sugar && <p>Sugar: {food.sugar}g</p>}
         </div>
 
-        {/* 🔥 Total Calories per Serving */}
-        <p className="mt-2 text-[13px] sm:text-sm font-semibold">
+        <p className="text-sm font-semibold">
           <span className="text-yellow-400">Total Calories:</span>{' '}
           <span className="text-green-400">{calories.toFixed(0)} kcal</span>
         </p>

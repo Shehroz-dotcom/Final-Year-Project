@@ -8,7 +8,7 @@ const FoodSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      index: true,
+      index: true, // keep
     },
 
     food_description: {
@@ -35,19 +35,20 @@ const FoodSchema = new mongoose.Schema(
     food_category: {
       type: String,
       required: [true, 'Category is required'],
-      index: true,
-    }, // e.g. "Main Course", "Snacks"
+      index: true, // keep
+    },
 
     food_type: {
       type: String,
       required: [true, 'Food type is required'],
-      index: true,
-    }, // e.g. "breakfast", "lunch", "dinner"
+      index: true, // keep
+    },
 
     // Macronutrients per serving
     calories: {
       type: Number,
       required: [true, 'Calories are required'],
+      index: true, // optional but kept
     },
     serving_size_g: {
       type: Number,
@@ -74,41 +75,35 @@ const FoodSchema = new mongoose.Schema(
       required: [true, 'Sugar is required'],
     },
 
-    // Diet compatibility (filters meals for users with restrictions)
+    diet_compatibility: [
+      {
+        type: String,
+        enum: [
+          'omnivore',
+          'vegetarian',
+          'vegan',
+          'keto',
+          'paleo',
+          'gluten-free',
+        ],
+        index: true, // keep
+      },
+    ],
 
-    // // Allergen tracking
-    // allergens: [{ type: String }], // e.g. ["nuts", "dairy", "shellfish"]
+    // Tags & metadata
+    tags: [{ type: String, required: true, index: true }],
+    suitability: [{ type: String, index: true }],
 
-    // Micronutrients (for future expansion)
-    // micronutrients: {
-    //   sodium_mg: { type: Number, default: 0 },
-    //   potassium_mg: { type: Number, default: 0 },
-    //   iron_mg: { type: Number, default: 0 },
-    // },
-
-    // Computed fields (auto-calculated for AI logic)
+    // Computed fields
     userReviews: [
       {
-       
-        rating: {
-          type: Number,
-          required: true,
-          min: 1,
-          max: 5,
-        },
+        rating: { type: Number, required: true, min: 1, max: 5 },
         reviewerName: {
           type: String,
-          required: [true, "UserName  is required "],
+          required: [true, 'UserName is required'],
         },
-        date: {
-          type: Date,
-          default: Date.now,
-        },
-        review: {
-          type: String,
-          required: true,
-          trim: true,
-        },
+        date: { type: Date, default: Date.now },
+        review: { type: String, required: true, trim: true },
       },
     ],
 
@@ -125,33 +120,9 @@ const FoodSchema = new mongoose.Schema(
         return totalCalories ? ((this.protein * 4) / totalCalories) * 100 : 0;
       },
     },
-    diet_compatibility: [
-      {
-        type: String,
-        enum: [
-          'omnivore',
-          'vegetarian',
-          'vegan',
-          'keto',
-          'paleo',
-          'gluten-free',
-        ],
-      },
-    ],
-
-    // Tags & metadata for recommendations
-    tags: [{ type: String, required: true }], // e.g. ["high-protein", "low-carb"]
-    suitability: [{ type: String }], // e.g. ["post-workout", "low-calorie", "recovery"]
   },
   { timestamps: true }
 );
-
-// ⚙️ Indexing for faster filtering
-FoodSchema.index({ tags: 1 });
-FoodSchema.index({ food_type: 1 });
-FoodSchema.index({ calories: 1 });
-FoodSchema.index({ diet_compatibility: 1 });
-FoodSchema.index({ suitability: 1 });
 
 const foodModel = mongoose.models.Food || mongoose.model('Food', FoodSchema);
 export default foodModel;

@@ -6,6 +6,11 @@ import axios from "axios";
 import Url from "../../Utils/Url.js";
 import Button from "../../Components/Button/Button.jsx";
 
+const inputBase =
+  "w-full px-3 py-2 rounded-md bg-white/15 border border-white/30 text-white placeholder-white/60 " +
+  "focus:outline-none focus:ring-2 focus:ring-white/70 focus:border-white/80 " +
+  "transition disabled:opacity-50 disabled:cursor-not-allowed";
+
 const AddFood = () => {
   const {
     register,
@@ -19,21 +24,21 @@ const AddFood = () => {
 
   const onSubmit = async (data) => {
     try {
-      const formData = new FormData();
-
       if (!file) {
         toast.error("Please upload an image");
         return;
       }
 
+      const formData = new FormData();
+
       formData.append("foodPic", file);
 
-      // Add all schema fields
       formData.append("food_name", data.food_name);
       formData.append("food_description", data.food_description);
       formData.append("food_price", data.food_price);
       formData.append("food_category", data.food_category);
       formData.append("food_type", data.food_type);
+
       formData.append("calories", data.calories);
       formData.append("serving_size_g", data.serving_size_g);
       formData.append("protein", data.protein);
@@ -41,7 +46,22 @@ const AddFood = () => {
       formData.append("fat", data.fat);
       formData.append("fiber", data.fiber);
       formData.append("sugar", data.sugar);
-      formData.append("tags", data.tags || "");
+
+      data.tags
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean)
+        .forEach((tag) => formData.append("tags[]", tag));
+
+      data.suitability
+        ?.split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .forEach((item) => formData.append("suitability[]", item));
+
+      (data.diet_compatibility || []).forEach((d) =>
+        formData.append("diet_compatibility[]", d)
+      );
 
       const response = await axios.post(
         `${Url.dev}/api/v1/food/addFood`,
@@ -55,16 +75,11 @@ const AddFood = () => {
         setPreview(null);
         setFile(null);
       } else {
-        toast.error("Data not uploaded");
+        toast.error("Upload failed");
       }
     } catch (err) {
-      const errorMessage =
-        err.response?.data?.message ||
-        err.response?.data ||
-        err.message ||
-        "Something went wrong";
-      console.error("Upload failed:", err.response?.data || err.message);
-      toast.error(errorMessage);
+      toast.error(err.response?.data?.message || "Something went wrong");
+      console.error(err);
     }
   };
 
@@ -74,35 +89,36 @@ const AddFood = () => {
         onSubmit={handleSubmit(onSubmit)}
         className="w-full max-w-2xl bg-black/50 backdrop-blur-md rounded-lg shadow-xl p-6 border border-white/20"
       >
-        <h2 className="text-2xl font-bold text-white mb-6 text-center drop-shadow-md">
+        <h2 className="text-2xl font-bold text-white mb-6 text-center">
           Add New Food Item
         </h2>
 
         {/* Image Upload */}
-        <div className="flex flex-col items-center mb-6">
-          <p className="mb-2 font-medium text-white">Upload Image</p>
+        <div className="mb-6">
           <label
             htmlFor="foodPic"
-            className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-white/60 rounded-lg cursor-pointer hover:border-white transition"
+            className="flex flex-col items-center justify-center h-40 border-2 border-dashed border-white/50 rounded-lg cursor-pointer hover:border-white transition"
           >
             {preview ? (
               <img
                 src={preview}
                 alt="preview"
-                className="w-full h-40 object-cover rounded-lg"
+                className="h-full w-full object-cover rounded-lg"
               />
             ) : (
-              <div className="flex flex-col items-center">
+              <>
                 <MdCloudUpload className="text-6xl text-white mb-2 opacity-80" />
-                <span className="text-white/80 text-sm">Click to upload</span>
-              </div>
+                <span className="text-white/70 text-sm">
+                  Click to upload image
+                </span>
+              </>
             )}
           </label>
-
           <input
             type="file"
             id="foodPic"
             hidden
+            accept="image/*"
             onChange={(e) => {
               const selected = e.target.files[0];
               if (selected) {
@@ -111,198 +127,134 @@ const AddFood = () => {
               }
             }}
           />
-          {!file && (
-            <p className="text-red-400 text-sm mt-1">Image is required</p>
-          )}
         </div>
 
         {/* Food Name */}
-        <div className="mb-4">
-          <label className="block text-white font-medium mb-1">Food Name</label>
+        <Field label="Food Name" error={errors.food_name}>
           <input
-            type="text"
             {...register("food_name", { required: true })}
-            className="w-full px-3 py-2 rounded-md bg-white/20 border border-white/40 text-white"
-            placeholder="e.g. Grilled Chicken Bowl"
+            className={inputBase}
           />
-          {errors.food_name && (
-            <p className="text-red-400 text-sm mt-1">Name is required</p>
-          )}
-        </div>
+        </Field>
 
         {/* Description */}
-        <div className="mb-4">
-          <label className="block text-white font-medium mb-1">
-            Description
-          </label>
+        <Field label="Description" error={errors.food_description}>
           <textarea
             {...register("food_description", { required: true })}
-            className="w-full px-3 py-2 rounded-md bg-white/20 border border-white/40 text-white"
-            placeholder="Describe the dish"
-            rows="3"
-          ></textarea>
-          {errors.food_description && (
-            <p className="text-red-400 text-sm mt-1">Description is required</p>
-          )}
-        </div>
+            className={inputBase}
+            rows={3}
+          />
+        </Field>
 
         {/* Category & Price */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="block text-white font-medium mb-1">
-              Category
-            </label>
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Category" error={errors.food_category}>
             <select
               {...register("food_category", { required: true })}
-              className="w-full px-3 py-2 rounded-md bg-white/20 border border-white/40 text-white"
+              className={inputBase}
             >
               <option value="">Select</option>
-              <option value="Main Course" className="text-black">
-                Main Course
-              </option>
-              <option value="Snacks" className="text-black">
-                Snacks
-              </option>
-              <option value="Breakfast" className="text-black">
-                Breakfast
-              </option>
+              <option value="Main Course">Main Course</option>
+              <option value="Snacks">Snacks</option>
+              <option value="Breakfast">Breakfast</option>
             </select>
-            {errors.food_category && (
-              <p className="text-red-400 text-sm mt-1">Category is required</p>
-            )}
-          </div>
+          </Field>
 
-          <div>
-            <label className="block text-white font-medium mb-1">Price</label>
+          <Field label="Price" error={errors.food_price}>
             <input
               type="number"
-              {...register("food_price", {
-                required: true,
-                valueAsNumber: true,
-              })}
-              className="w-full px-3 py-2 rounded-md bg-white/20 border border-white/40 text-white"
-              placeholder="Rs 150"
+              {...register("food_price", { required: true })}
+              className={inputBase}
             />
-            {errors.food_price && (
-              <p className="text-red-400 text-sm mt-1">Price is required</p>
-            )}
-          </div>
+          </Field>
         </div>
 
-        {/* Type */}
-        <div className="mb-4">
-          <label className="block text-white font-medium mb-1">Type</label>
+        {/* Food Type */}
+        <Field label="Food Type" error={errors.food_type}>
           <select
             {...register("food_type", { required: true })}
-            className="w-full px-3 py-2 rounded-md bg-white/20 border border-white/40 text-white"
+            className={inputBase}
           >
             <option value="">Select</option>
-            <option value="breakfast" className="text-black">
-              Breakfast
-            </option>
-            <option value="lunch" className="text-black">
-              Lunch
-            </option>
-            <option value="dinner" className="text-black">
-              Dinner
-            </option>
+            <option value="breakfast">Breakfast</option>
+            <option value="lunch">Lunch</option>
+            <option value="dinner">Dinner</option>
           </select>
-          {errors.food_type && (
-            <p className="text-red-400 text-sm mt-1">Type is required</p>
-          )}
-        </div>
+        </Field>
 
-        {/* Calories & Serving Size */}
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="block text-white font-medium mb-1">
-              Calories (kcal)
-            </label>
+        {/* Calories & Serving */}
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Calories" error={errors.calories}>
             <input
               type="number"
-              {...register("calories", { required: true, valueAsNumber: true })}
-              className="w-full px-3 py-2 rounded-md bg-white/20 border border-white/40 text-white"
+              {...register("calories", { required: true })}
+              className={inputBase}
             />
-            {errors.calories && (
-              <p className="text-red-400 text-sm mt-1">Calories are required</p>
-            )}
-          </div>
-          <div>
-            <label className="block text-white font-medium mb-1">
-              Serving Size (g)
-            </label>
+          </Field>
+
+          <Field label="Serving Size (g)" error={errors.serving_size_g}>
             <input
               type="number"
-              {...register("serving_size_g", {
-                required: true,
-                valueAsNumber: true,
-              })}
-              className="w-full px-3 py-2 rounded-md bg-white/20 border border-white/40 text-white"
+              {...register("serving_size_g", { required: true })}
+              className={inputBase}
             />
-            {errors.serving_size_g && (
-              <p className="text-red-400 text-sm mt-1">
-                Serving size is required
-              </p>
-            )}
-          </div>
+          </Field>
         </div>
 
-        {/* Nutrition Fields */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-          {["protein", "carbs", "fat", "fiber", "sugar"].map((nutrient) => (
-            <div key={nutrient}>
-              <label className="block text-white font-medium mb-1 capitalize">
-                {nutrient} (g)
-              </label>
+        {/* Macros */}
+        <div className="grid grid-cols-3 gap-4">
+          {["protein", "carbs", "fat", "fiber", "sugar"].map((n) => (
+            <Field key={n} label={`${n} (g)`} error={errors[n]}>
               <input
                 type="number"
-                {...register(nutrient, { required: true, valueAsNumber: true })}
-                className="w-full px-3 py-2 rounded-md bg-white/20 border border-white/40 text-white"
+                {...register(n, { required: true })}
+                className={inputBase}
               />
-              {errors[nutrient] && (
-                <p className="text-red-400 text-sm mt-1">
-                  {nutrient} is required
-                </p>
-              )}
-            </div>
+            </Field>
           ))}
         </div>
 
+        {/* Diet Compatibility */}
+        <Field label="Diet Compatibility">
+          <select
+            multiple
+            {...register("diet_compatibility")}
+            className={inputBase}
+          >
+            {[
+              "omnivore",
+              "vegetarian",
+              "vegan",
+              "keto",
+              "paleo",
+              "gluten-free",
+            ].map((d) => (
+              <option key={d} value={d}>
+                {d}
+              </option>
+            ))}
+          </select>
+        </Field>
+
         {/* Suitability */}
-        <div className="mb-6">
-          <label className="block text-white font-medium mb-1">
-            Suitability
-          </label>
+        <Field label="Suitability (comma separated)">
           <input
-            type="text"
             {...register("suitability")}
+            className={inputBase}
             placeholder="e.g. post-workout, low-calorie, recovery"
-            className="w-full px-3 py-2 rounded-md bg-white/20 border border-white/40 text-white"
           />
-          <p className="text-xs text-white/60 mt-1">
-            Separate multiple suitability tags with commas.
-          </p>
-        </div>
+        </Field>
 
         {/* Tags */}
-        <div className="mb-6">
-          <label className="block text-white font-medium mb-1">Tags</label>
+        <Field label="Tags (comma separated)" error={errors.tags}>
           <input
-            type="text"
-            {...register("tags")}
-            placeholder="e.g. high-protein, low-carb"
-            className="w-full px-3 py-2 rounded-md bg-white/20 border border-white/40 text-white"
+            {...register("tags", { required: true })}
+            className={inputBase}
+            placeholder="e.g. high-protein, low-carb, gluten-free"
           />
-          <p className="text-xs text-white/60 mt-1">
-            Separate tags with commas.
-          </p>
-        </div>
+        </Field>
 
-        {/* Submit */}
-        <Button
-          type="submit"
-          className="bg-black border-white border hover:font-bold hover:text-black"
-        >
+        <Button type="submit" className="mt-4 border-green-400 text-white">
           Save Food Item
         </Button>
       </form>
@@ -310,4 +262,14 @@ const AddFood = () => {
   );
 };
 
+const Field = ({ label, error, children }) => (
+  <div className="mb-4">
+    <label className="block text-white mb-1 font-medium">{label}</label>
+    {children}
+    {error && (
+      <p className="text-red-400 text-sm mt-1">This field is required</p>
+    )}
+  </div>
+);
+// add the remaining dishes details added new input feilds 
 export default AddFood;
