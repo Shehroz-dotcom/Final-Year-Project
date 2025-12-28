@@ -41,8 +41,7 @@ const FoodCard = ({ food }) => {
         shadow-lg
         flex
         flex-col
-        transition
-        hover:shadow-xl
+        transition-transform  duration-150 ease-in-out hover:scale-[1.03] hover:shadow-[0_4px_10px_rgba(0,0,0,0.2)]
       "
       onClick={() => navigate(`/food/${food._id}`)}
     >

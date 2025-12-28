@@ -6,7 +6,7 @@ import { CartContext } from '../Context/CartContext/CartContext.jsx';
 import Urls from '../utils/Urls.js';
 import axios from 'axios';
 import { FaTimes } from 'react-icons/fa';
-import { saveNutrition } from '../../../Backend/src/controllers/userControllers/saveNutrition.controller.js';
+
 
 const Cart = () => {
   const { foodData, getFood } = useContext(FoodContext);
@@ -64,12 +64,16 @@ const Cart = () => {
     setTotalCalories(calorieSum);
   }, [foodData, cartItems]);
 
-  // const sendNutritionsData = async() => {
-  //   console.log("nutrition data function");
-  //   const response =  await axios.post(`${Urls.dev}/api/v1/user/saveNutritions` , {cartItems} , {withCredentials: true})
-
+  const sendNutritionsData = async () => {
+    console.log('nutrition data function');
+    const response = await axios.post(
+      `${Urls.dev}/api/v1/user/saveNutritions`,
+      { cartItems },
+      { withCredentials: true }
+    );
+    console.log("nutriton send response ",response);
     
-  // }
+  };
   const handlePlaceOrder = async () => {
     try {
       const payload = {
@@ -201,7 +205,8 @@ const Cart = () => {
 
           <button
             onClick={() => {
-              handlePlaceOrder()  
+              handlePlaceOrder();
+              sendNutritionsData();
             }}
             className="w-full bg-white text-black font-semibold py-3 rounded-md hover:bg-green-400 transition"
           >
@@ -214,6 +219,8 @@ const Cart = () => {
             <input
               type="text"
               name="DeliveryAddress"
+              readOnly
+              value={userData.address}
               placeholder="Enter your delivery address"
               className="w-full bg-transparent border border-white/20 rounded-md px-3 py-2 text-white outline-none focus:border-green-400 transition"
             />

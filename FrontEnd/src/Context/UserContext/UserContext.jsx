@@ -42,10 +42,7 @@ const UserContextProvider = ({ children }) => {
       if (response.data.success) {
         setUserData(response.data.user);
         sessionStorage.setItem('User', JSON.stringify(response.data.user));
-        console.log(
-          JSON.parse(sessionStorage.getItem('User')),
-          'from sesstion storage '
-        );
+      
         // ✅ store only data, not full response
       }
 
