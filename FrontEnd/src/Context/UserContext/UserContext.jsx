@@ -42,7 +42,7 @@ const UserContextProvider = ({ children }) => {
       if (response.data.success) {
         setUserData(response.data.user);
         sessionStorage.setItem('User', JSON.stringify(response.data.user));
-      
+
         // ✅ store only data, not full response
       }
 
@@ -69,8 +69,8 @@ const UserContextProvider = ({ children }) => {
         setUserData(null);
         console.log('✅ User logged out');
         // Optional: redirect
-       
-        sessionStorage.clear()
+
+        sessionStorage.clear();
         window.location.href = '/login';
       }
     } catch (error) {

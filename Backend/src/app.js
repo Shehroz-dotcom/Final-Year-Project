@@ -6,22 +6,31 @@ import {
   userRouter,
   AuthRouter,
   orderRouter,
-  reviewRouter
+  reviewRouter,
+  cloudRouter,
 } from './routes/index.js';
 
 const app = express();
 
 // ✅ CORS
-const allowedOrigins = process.env.CORS_ORIGIN.split(',').map((o) => o.trim());
+// ✅ CORS
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+  : [];
+
+console.log('Allowed Origins:', allowedOrigins);
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      // allow requests from Postman / curl
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
         console.log('CORS Blocked:', origin);
-        callback(new Error('CORS not allowed for: ' + origin));
+        callback(null, false); // do NOT throw error
       }
     },
     credentials: true,
@@ -37,6 +46,8 @@ app.use(express.static('Public'));
 app.use(cookieParser());
 
 // ✅ Routes (AFTER parsers)
+//geting address cordinatess api
+
 //food routes
 app.use('/api/v1/food', foodRouter);
 //user routes
@@ -44,6 +55,7 @@ app.use('/api/v1/user', userRouter);
 app.use('/api/v1/auth', AuthRouter);
 app.use('/api/v1/order', orderRouter);
 app.use('/api/v1/review', reviewRouter);
+app.use('/api/v1/cloud/', cloudRouter);
 
 app.get('/', (req, res) => {
   res.send('Api working');

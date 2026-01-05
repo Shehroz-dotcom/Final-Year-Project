@@ -3,5 +3,6 @@ import { foodRouter } from './foodRoute.js';
 import { AuthRouter } from './authRoute.js';
 import { orderRouter } from './orderRoute.js';
 import { reviewRouter } from './reviewRoutes.js';
+import { cloudRouter } from './cloudRoute.js';
 
-export { foodRouter, userRouter, AuthRouter  , orderRouter , reviewRouter};
+export { foodRouter, userRouter, AuthRouter  , orderRouter , reviewRouter,  cloudRouter};
