@@ -1,16 +1,23 @@
-import { memo } from "react";
+import React, { memo, useContext } from "react";
 import { useForm } from "react-hook-form";
 import Input from "../components/input.jsx";
-import React from "react";
+import { CloudContext } from "../Context/CloudKitchenContext.jsx";
 
 const Loginpage = () => {
+  const { Login } = useContext(CloudContext);
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (data) => console.log("Login data:", data);
+  const onSubmit = async (credentials) => {
+    try {
+      console.log(credentials, "login page ");
+
+      await Login(credentials);
+    } catch (error) {}
+  };
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center px-4">
@@ -24,16 +31,9 @@ const Loginpage = () => {
         </h2>
 
         <Input
+          type="text"
           label="Branch Code"
-          name="branchCode"
-          register={register}
-          errors={errors}
-          required
-        />
-
-        <Input
-          label="Address"
-          name="address"
+          name="branch_code"
           register={register}
           errors={errors}
           required
@@ -54,15 +54,13 @@ const Loginpage = () => {
 
         <button
           type="submit"
-          className="w-full rounded-md bg-green-600 hover:bg-green-700 py-2 text-white font-medium transition"
+          className="w-full rounded-md bg-green-600 hover:bg-green-700 py-2 text-white font-medium transition cursor-pointer"
         >
           Login
         </button>
       </form>
 
-      <div className="w-full mt-8">
-    
-      </div>
+      <div className="w-full mt-8"></div>
     </div>
   );
 };

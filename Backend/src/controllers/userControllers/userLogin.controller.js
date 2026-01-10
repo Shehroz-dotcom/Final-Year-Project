@@ -55,6 +55,13 @@ const userLogin = async (req, res) => {
         refreshToken,
         message: 'User Logged In Successfully',
       });
-  } catch (error) {}
+  } catch (error) {
+    console.error('Error in userLogin:', error);
+
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Internal server error',
+    });
+  }
 };
 export { userLogin };

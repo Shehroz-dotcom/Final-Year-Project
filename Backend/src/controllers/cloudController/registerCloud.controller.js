@@ -1,54 +1,68 @@
-import CloudKitchen from '../../models/cloudKitchen.model.js'; // adjust path
+import CloudKitchenModel from '../../models/cloudKitchen.model.js'; // adjust path
 import bcrypt from 'bcrypt';
+import { generateAccessToken } from '../../utils/CloudTokenGenerator/generateAccessToken.js';
+import { generateRefreshToken } from '../../utils/CloudTokenGenerator/generateRefreshToken.js';
 
-const registerCloud = async (req, res) => {
+const registerCloudKitchen = async (req, res) => {
   try {
     const { branchCode, address, password, latitude, longitude } = req.body;
-    console.log(req.body);
     
-
-    console.log(
-      'from controller:',
-      branchCode,
-      address,
-      password,
-      latitude,
-      longitude
-    );
-
+    //required fields validations 
     if (!branchCode || !address || !password || !latitude || !longitude) {
-      return res.status(400).json({
-        message: 'All fields including location are required',
-      });
+      return res.status(400).json({ message: 'All fields are required' });
     }
-
-    // Check if branch_code already exists
-    const existing = await CloudKitchen.findOne({ branch_code: branchCode });
+    //check for existing branch
+    const existing = await CloudKitchenModel.findOne({
+      branch_code: branchCode,
+    });
     if (existing) {
-      return res.status(400).json({ message: 'Branch code already exists' });
+      return res.status(409).json({ message: 'Branch code already exists' });
     }
-
-    // Save cloud kitchen
-    const cloudKitchen = await CloudKitchen.create({
+    //create  cloud  kitchen
+    const newCloudKitchen = await CloudKitchenModel.create({
       branch_code: branchCode,
       address,
-      password, // model pre-save will hash it
+      password,
       location: {
         type: 'Point',
-        coordinates: [parseFloat(longitude), parseFloat(latitude)], // MongoDB requires [lng, lat]
+        coordinates: [parseFloat(longitude), parseFloat(latitude)],
       },
     });
 
-    return res.status(201).json({
-      message: 'Cloud kitchen registered successfully',
-      cloudKitchenId: cloudKitchen._id,
-    });
+    const createdKitchen = await CloudKitchenModel.findById(newCloudKitchen._id)
+    .select('-password -refreshToken')
+
+  if(!createdKitchen){
+    return res.status(500).json({
+      success:false,
+      message: 'Something went wrong while creating a  kitchen'
+
+    })
+  }
+
+    const { accessToken } = await generateAccessToken(newCloudKitchen._id);
+    const { refreshToken } = await generateRefreshToken(newCloudKitchen._id);
+
+    const options = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    };
+
+    return res
+      .status(201)
+      .cookie('cloudAccessToken', accessToken, options)
+      .cookie('cloudRefreshToken', refreshToken, options)
+      .json({
+        success: true,
+        message: 'Cloud kitchen registered successfully',
+        cloudKitchen: createdKitchen,
+      });
   } catch (error) {
     console.error('registerCloud error:', error);
     return res.status(500).json({
-      message: 'Internal server error',
+      message: error.message || 'Internal server error',
     });
   }
 };
-
-export { registerCloud };
+export {registerCloudKitchen}

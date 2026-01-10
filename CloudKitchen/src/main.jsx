@@ -10,7 +10,7 @@ import CloudContextProvider from "./Context/CloudKitchenContext.jsx";
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <CloudContextProvider>
-      <App />
+        <App />
     </CloudContextProvider>
   </BrowserRouter>
 );

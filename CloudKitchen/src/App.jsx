@@ -9,10 +9,12 @@ import bg from "../../FrontEnd/src/assets/paul-lichtblau-13khUlRITD8-unsplash.jp
 const App = () => {
   return (
     <div
-      className="min-h-screen flex flex-col bg-cover bg-no-repeat bg-fixed"
+      className="relative min-h-screen bg-cover bg-center bg-fixed"
       style={{ backgroundImage: `url(${bg})` }}
     >
-      <div className="flex-grow">
+      <div className="absolute inset-0 bg-black/50" />
+
+      <div className="relative z-10 grow">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Loginpage />} />
