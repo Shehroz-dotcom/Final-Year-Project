@@ -3,8 +3,15 @@ import { useForm } from 'react-hook-form';
 import { UserContext } from '../Context/UserContext/UserContext.jsx';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import UserLocationMap from '../Components/UserLocation.jsx';
+import { FiMapPin } from 'react-icons/fi';
+import { getUserLocation } from '../utils/getUserLocation.js';
+import { reverseGeocode } from '../utils/reverseGeocoder.js';
 
 const Register = () => {
+  const [coords, setCoords] = useState(null); // [lat, lng]
+  const [locationError, setLocationError] = useState(null);
+  const [showMap, setShowMap] = useState(false);
   const { Register } = useContext(UserContext);
   const [isSuccess, setIsSuccess] = useState(false);
   const navigate = useNavigate();
@@ -12,12 +19,40 @@ const Register = () => {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm();
 
+  // 📍 Handle map open + location fetch
+  const handleOpenMap = async () => {
+    setShowMap(true);
+
+    if (!coords) {
+      try {
+        const pos = await getUserLocation();
+        setCoords([pos.latitude, pos.longitude]);
+      } catch (err) {
+        setLocationError(err.message);
+      }
+    }
+  };
+
   const onSubmit = async (data) => {
+    if (!coords) {
+      toast.error('Please select your location on the map');
+      return;
+    }
+
+    const payload = {
+      ...data,
+      latitude: coords[0],
+      longitude: coords[1],
+    };
+
+    console.log('Sending payload to backend:', payload);
+
     try {
-      const { success, message } = await Register(data);
+      const { success, message } = await Register(payload);
 
       if (success) {
         toast.success(message);
@@ -98,18 +133,54 @@ const Register = () => {
           <label className="block text-sm font-medium mb-2 text-white">
             Address
           </label>
-          <textarea
-            placeholder="Enter your address"
-            className="w-full px-3 py-2 rounded bg-transparent border border-gray-500/40 text-white"
-            {...register('address', { required: 'Address is required' })}
-          />
+
+          <div className="relative">
+            <textarea
+              placeholder="Enter your address"
+              className="w-full px-3 py-2 pr-10 rounded bg-transparent border border-gray-500/40 text-white resize-none"
+              {...register('address', { required: 'Address is required' })}
+            />
+
+            <FiMapPin
+              className="absolute right-3 top-3 text-white/70 cursor-pointer hover:text-white"
+              size={18}
+              onClick={handleOpenMap}
+              title="Use current location"
+            />
+          </div>
+
           {errors.address && (
             <p className="text-red-400 text-sm">{errors.address.message}</p>
           )}
         </div>
 
+        {showMap && coords && (
+          <div className="mt-4 relative border border-gray-500/40 rounded overflow-hidden">
+            <UserLocationMap
+              initialCoords={coords}
+              onLocationChange={async (newCoords) => {
+                // console.log('Location changed:', {
+                //   latitude: newCoords[0],
+                //   longitude: newCoords[1],
+                // });
+
+                setCoords(newCoords);
+
+                // 🔁 Fetch address from coordinates
+                const addressString = await reverseGeocode(
+                  newCoords[0],
+                  newCoords[1]
+                );
+
+                // Update the address input field
+                setValue('address', addressString);
+              }}
+            />
+          </div>
+        )}
+
         {/* Password */}
-        <div className="mb-6">
+        <div className="mb-4 mt-4">
           <label className="block text-sm font-medium mb-2 text-white">
             Password
           </label>
@@ -117,7 +188,13 @@ const Register = () => {
             type="password"
             placeholder="Enter your password"
             className="w-full px-3 py-2 rounded bg-transparent border border-gray-500/40 text-white"
-            {...register('password', { required: 'Password is required' })}
+            {...register('password', {
+              required: 'Password is required',
+              minLength: {
+                value: 6,
+                message: 'Password must be at least 6 characters',
+              },
+            })}
           />
           {errors.password && (
             <p className="text-red-400 text-sm">{errors.password.message}</p>

@@ -8,7 +8,7 @@ import {
   orderRouter,
   reviewRouter,
   cloudRouter,
-  paymentRouter
+  // paymentRouter
 } from './routes/index.js';
 
 const app = express();
@@ -60,7 +60,7 @@ app.use('/api/v1/review', reviewRouter);
 app.use('/api/v1/cloud', cloudRouter);
 
 //payment Routes
-app.use('/api/v1/payment',paymentRouter);
+// app.use('/api/v1/payment',paymentRouter);
 
 app.get('/', (req, res) => {
   res.send('Api working');

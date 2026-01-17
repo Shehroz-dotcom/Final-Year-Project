@@ -85,19 +85,23 @@ const UserContextProvider = ({ children }) => {
         credentials,
         { withCredentials: true }
       );
+
       if (response.data.success) {
-        setUserData(response.data.user);
+        const user = response.data.user;
+
+        // ✅ Save to React state
+        setUserData(user);
+
+        // ✅ Save to sessionStorage
+        sessionStorage.setItem('user', JSON.stringify(user));
+        sessionStorage.setItem('isAuthenticated', 'true');
       }
+
       return response.data;
     } catch (error) {
       if (error.response) {
-        // ✅ Status code from backend
         console.error('Status:', error.response.status);
-
-        // ✅ Message you set in the controller
         console.error('Message:', error.response.data.message);
-
-        // (Optional) Full response object
       } else {
         console.error('❌ Network or other error:', error.message);
       }

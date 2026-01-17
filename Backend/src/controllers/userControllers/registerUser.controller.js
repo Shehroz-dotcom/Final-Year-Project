@@ -3,14 +3,36 @@ import { generateAccessToken } from '../../utils/TokenGenerator/generateAccessTo
 import { generateRefreshToken } from '../../utils/TokenGenerator/generateRefreshToken.js';
 
 const registerUser = async (req, res) => {
-  const { fullName, email, password, address, phoneNo } = req.body;
+  const { fullName, email, password, address, phoneNo, latitude, longitude } =
+    req.body;
 
   try {
     // Required fields validation
-    if (!fullName || !email || !password || !address || !phoneNo) {
+    if (
+      !fullName ||
+      !email ||
+      !password ||
+      !address ||
+      !phoneNo ||
+      latitude == null ||
+      longitude == null
+    ) {
       return res.status(400).json({
         success: false,
-        message: 'All fields are required',
+        message: 'All fields including location are required',
+      });
+    }
+
+    // Validate coordinate ranges (DO NOT SKIP THIS)
+    if (
+      latitude < -90 ||
+      latitude > 90 ||
+      longitude < -180 ||
+      longitude > 180
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid latitude or longitude values',
       });
     }
 
@@ -23,13 +45,17 @@ const registerUser = async (req, res) => {
       });
     }
 
-    // Create new user
+    // Create new user with GeoJSON location
     const newUser = await userModel.create({
       fullName,
       email,
       password,
       address,
       phoneNo,
+      location: {
+        type: 'Point',
+        coordinates: [longitude, latitude], // IMPORTANT ORDER
+      },
     });
 
     const createdUser = await userModel

@@ -5,7 +5,8 @@ import { FiMapPin } from "react-icons/fi";
 import Input from "../components/input.jsx";
 import UserLocationMap from "../components/UserLocation.jsx";
 import { CloudContext } from "../Context/CloudKitchenContext.jsx";
-import { getUserLocation } from "../Utlis/getUserLocation.js";
+import { getUserLocation } from "../Utils/getUserLocation.js";
+import { reverseGeocode } from "../Utils/reverseGeocoder.js";
 
 const Register = () => {
   const [coords, setCoords] = useState(null); // [lat, lng]
@@ -17,6 +18,7 @@ const Register = () => {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm();
 
@@ -89,9 +91,21 @@ const Register = () => {
           <div className="mt-4">
             <UserLocationMap
               initialCoords={coords}
-              onLocationChange={(newCoords) => {
+              onLocationChange={async (newCoords) => {
                 setCoords(newCoords);
                 console.log("Marker moved to:", newCoords);
+
+                // 🔁 Reverse geocode to get address
+                try {
+                  const addressString = await reverseGeocode(
+                    newCoords[0],
+                    newCoords[1]
+                  );
+                  // Update the form address field
+                  setValue("address", addressString);
+                } catch (err) {
+                  console.error("Failed to fetch address:", err);
+                }
               }}
             />
           </div>

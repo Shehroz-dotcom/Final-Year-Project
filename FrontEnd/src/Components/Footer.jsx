@@ -3,14 +3,14 @@ import React from 'react';
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-900 text-gray-200 px-6 py-12 md:px-12 lg:px-24">
+    <footer className="bg-black text-white px-6 py-12 md:px-12 lg:px-24">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:justify-between items-center md:items-start gap-8">
         {/* Logo Section */}
         <div className="flex-1 flex flex-col items-center md:items-start">
-          <div className="text-2xl md:text-3xl font-bold text-white mb-2">
+          <div className="text-2xl md:text-3xl font-bold mb-2">
             Eatelligence
           </div>
-          <p className="text-sm text-gray-400 text-center md:text-left">
+          <p className="text-sm text-gray-300 text-center md:text-left">
             Innovative meals for smarter living.
           </p>
         </div>
@@ -33,7 +33,7 @@ const Footer = () => {
       </div>
 
       {/* Bottom Text */}
-      <div className="mt-8 border-t border-gray-800 pt-4 text-center text-gray-500 text-sm">
+      <div className="mt-8 border-t border-gray-700 pt-4 text-center text-gray-400 text-sm">
         &copy; {new Date().getFullYear()} Eatelligence. All rights reserved.
       </div>
     </footer>

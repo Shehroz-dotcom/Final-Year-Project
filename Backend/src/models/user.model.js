@@ -25,6 +25,20 @@ const userSchema = new Schema(
       trim: true,
       index: true,
     },
+
+    location: {
+      type: {
+        type: String,
+        enum: ['Point'],
+        required: true,
+        default: 'Point',
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        required: true,
+      },
+    },
+
     phoneNo: {
       type: String,
       required: true,
@@ -83,6 +97,8 @@ const userSchema = new Schema(
   },
   { timestamps: true }
 );
+
+userSchema.index({ location: '2dsphere' });
 
 // 🧂 Encrypt password before saving
 userSchema.pre('save', async function (next) {
