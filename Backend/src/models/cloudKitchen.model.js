@@ -21,7 +21,6 @@ const cloudKitchenSchema = new mongoose.Schema(
     refreshToken: {
       type: String,
     },
-    // ✅ Location for map & geospatial queries
     location: {
       type: {
         type: String,
@@ -34,6 +33,29 @@ const cloudKitchenSchema = new mongoose.Schema(
         required: true,
       },
     },
+    // 🛒 Orders array
+    orders: [
+      {
+        order_id: { type: String, required: true },
+        items: [
+          {
+            name: { type: String, required: true },
+            quantity: { type: Number, required: true },
+          },
+        ],
+        totalPrice: { type: Number, required: true }, // <-- string, not number
+        status: {
+          type: String,
+          enum: ['placed', 'cooking', 'out for delivery', 'delivered'],
+          default: 'placed',
+        },
+        deliveryAddress: {
+          type: String,
+          required: true,
+        },
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
   },
   { timestamps: true } // createdAt & updatedAt
 );
@@ -67,7 +89,6 @@ cloudKitchenSchema.methods.generateAccessToken = function () {
     }
   );
 };
-
 
 // ✅ Generate refresh token
 cloudKitchenSchema.methods.generateRefreshToken = function () {
