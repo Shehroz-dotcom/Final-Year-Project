@@ -3,18 +3,17 @@ import Button from "../../Components/Button/Button.jsx";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import Urls from "../../Utils/Url.js";
-import { MdCloudUpload } from "react-icons/md";
-
-const DIET_OPTIONS = [
-  "omnivore",
-  "vegetarian",
-  "vegan",
-  "keto",
-  "paleo",
-  "gluten-free",
-];
+import Select from "react-select";
+import {
+  TAG_OPTIONS,
+  SUITABILITY_OPTIONS,
+  DIET_COMPATIBILITY,
+  FOOD_CATEGORY,
+  FOOD_TYPE,
+} from "../../Utils/nutritions.js";
+import { customStyles } from "../../Utils/customStyles.js";
 
 const inputBase =
   "w-full px-3 py-2 rounded-md bg-white/15 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/70 focus:border-white/80 transition";
@@ -23,21 +22,26 @@ const EditFood = () => {
   const [searchParams] = useSearchParams();
   const name = searchParams.get("name");
 
-  const { register, handleSubmit, reset, setValue, watch } = useForm({
+  const { register, handleSubmit, reset, control } = useForm({
     defaultValues: {
       diet_compatibility: [],
+      suitability: [],
+      tags: [],
     },
   });
 
   const [loading, setLoading] = useState(false);
-  const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
 
+  const mapToSelectOptions = (arr) =>
+    arr.map((item) => ({ value: item, label: item }));
+
+  /* -------------------- FETCH FOOD -------------------- */
   const fetchFoodDetails = async () => {
     try {
       const response = await axios.get(
         `${Urls.dev}/api/v1/food/getFoodDetails`,
-        { params: { name } }
+        { params: { name } },
       );
 
       const data = response.data.data;
@@ -46,8 +50,28 @@ const EditFood = () => {
         return;
       }
 
-      reset(data);
-      if (data.food_image_url) setPreview(data.food_image_url);
+      reset({
+        ...data,
+        food_category: data.food_category
+          ? { value: data.food_category, label: data.food_category }
+          : null,
+        food_type: data.food_type
+          ? { value: data.food_type, label: data.food_type }
+          : null,
+        diet_compatibility: (data.diet_compatibility || []).map((d) => ({
+          value: d,
+          label: d,
+        })),
+        suitability: (data.suitability || []).map((s) => ({
+          value: s,
+          label: s,
+        })),
+        tags: (data.tags || []).map((t) => ({ value: t, label: t })),
+      });
+
+      if (data.food_image_url) {
+        setPreview(data.food_image_url);
+      }
     } catch (error) {
       toast.error(error.response?.data?.message || "Error fetching food data");
     }
@@ -57,57 +81,36 @@ const EditFood = () => {
     if (name) fetchFoodDetails();
   }, [name]);
 
+  /* -------------------- SUBMIT -------------------- */
   const onSubmit = async (formData) => {
     try {
       setLoading(true);
 
-      const payload = new FormData();
+      const payload = {
+        food_name: formData.food_name, // immutable key
 
-      /* Append all fields */
-      [
-        "food_name",
-        "food_description",
-        "food_price",
-        "food_category",
-        "food_type",
-        "calories",
-        "serving_size_g",
-        "protein",
-        "carbs",
-        "fat",
-        "fiber",
-        "sugar",
-      ].forEach((key) => {
-        payload.append(key, formData[key]);
+        food_description: formData.food_description,
+        food_price: Number(formData.food_price),
+        food_category: formData.food_category?.value,
+        food_type: formData.food_type?.value,
+
+        calories: Number(formData.calories),
+        serving_size_g: Number(formData.serving_size_g),
+
+        protein: Number(formData.protein),
+        carbs: Number(formData.carbs),
+        fat: Number(formData.fat),
+        fiber: Number(formData.fiber),
+        sugar: Number(formData.sugar),
+
+        tags: formData.tags.map((t) => t.value),
+        suitability: formData.suitability.map((s) => s.value),
+        diet_compatibility: formData.diet_compatibility.map((d) => d.value),
+      };
+
+      await axios.put(`${Urls.dev}/api/v1/food/updateFood`, payload, {
+        headers: { "Content-Type": "application/json" },
       });
-
-      /* Image */
-      if (file) payload.append("foodPic", file);
-
-      /* Tags */
-      (formData.tags || "")
-        .split(",")
-        .map((t) => t.trim())
-        .filter(Boolean)
-        .forEach((t) => {
-          payload.append("tags[]", t);
-        });
-
-      /* Suitability */
-      (formData.suitability || "")
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean)
-        .forEach((s) => {
-          payload.append("suitability[]", s);
-        });
-
-      /* Diet Compatibility */
-      (formData.diet_compatibility || []).forEach((d) =>
-        payload.append("diet_compatibility[]", d)
-      );
-
-      await axios.put(`${Urls.dev}/api/v1/food/updateFood`, payload);
 
       toast.success("Food updated successfully!");
     } catch (error) {
@@ -123,40 +126,18 @@ const EditFood = () => {
 
       <div className="bg-black/50 p-6 rounded-lg shadow-lg">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Image Upload */}
-          <div>
-            <label
-              htmlFor="foodPic"
-              className="flex flex-col items-center justify-center h-40 border-2 border-dashed border-white/50 rounded-lg cursor-pointer hover:border-white"
-            >
-              {preview ? (
-                <img
-                  src={preview}
-                  className="h-full w-full object-cover rounded-lg"
-                />
-              ) : (
-                <>
-                  <MdCloudUpload className="text-6xl text-white/80 mb-1" />
-                  <span className="text-white/60 text-sm">Upload Image</span>
-                </>
-              )}
-            </label>
-            <input
-              type="file"
-              id="foodPic"
-              hidden
-              accept="image/*"
-              onChange={(e) => {
-                const f = e.target.files[0];
-                if (f) {
-                  setFile(f);
-                  setPreview(URL.createObjectURL(f));
-                }
-              }}
-            />
-          </div>
+          {/* Existing Image (Read-Only) */}
+          {preview && (
+            <div className="h-40 rounded-lg overflow-hidden border border-white/30">
+              <img
+                src={preview}
+                alt="Food"
+                className="h-full w-full object-cover"
+              />
+            </div>
+          )}
 
-          {/* Basic Fields */}
+          {/* Food Name */}
           <Field label="Food Name">
             <input
               type="text"
@@ -174,107 +155,84 @@ const EditFood = () => {
             />
           </Field>
 
+          {/* Category & Type */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="Price">
-              <input
-                type="number"
-                {...register("food_price")}
-                className={inputBase}
-              />
-            </Field>
             <Field label="Category">
-              <input
-                type="text"
-                {...register("food_category")}
-                className={inputBase}
+              <Controller
+                name="food_category"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    options={mapToSelectOptions(FOOD_CATEGORY)}
+                    styles={customStyles}
+                  />
+                )}
               />
             </Field>
+
             <Field label="Type">
-              <input
-                type="text"
-                {...register("food_type")}
-                className={inputBase}
+              <Controller
+                name="food_type"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    options={mapToSelectOptions(FOOD_TYPE)}
+                    styles={customStyles}
+                  />
+                )}
               />
             </Field>
           </div>
 
           {/* Nutrition */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <Field label="Calories">
-              <input
-                type="number"
-                {...register("calories")}
-                className={inputBase}
-              />
-            </Field>
-            <Field label="Serving Size (g)">
-              <input
-                type="number"
-                {...register("serving_size_g")}
-                className={inputBase}
-              />
-            </Field>
-            {["protein", "carbs", "fat", "fiber", "sugar"].map((n) => (
-              <Field key={n} label={n}>
+            {[
+              "food_price",
+              "calories",
+              "serving_size_g",
+              "protein",
+              "carbs",
+              "fat",
+              "fiber",
+              "sugar",
+            ].map((n) => (
+              <Field key={n} label={n.replace(/_/g, " ")}>
                 <input type="number" {...register(n)} className={inputBase} />
               </Field>
             ))}
           </div>
 
-          {/* Diet Compatibility */}
-          <Field label="Diet Compatibility">
-            <div className="relative group">
-              <div className={`${inputBase} cursor-pointer select-none`}>
-                {watch("diet_compatibility").length
-                  ? watch("diet_compatibility").join(", ")
-                  : "Select diet compatibility"}
-              </div>
-              <div className="absolute left-0 top-full z-30 mt-1 w-full bg-black/90 border border-white/30 rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition">
-                {DIET_OPTIONS.map((d) => {
-                  const selected = watch("diet_compatibility").includes(d);
-                  return (
-                    <div
-                      key={d}
-                      className="px-3 py-2 flex items-center gap-2 cursor-pointer hover:bg-white/10"
-                      onClick={() => {
-                        const curr = watch("diet_compatibility");
-                        setValue(
-                          "diet_compatibility",
-                          selected ? curr.filter((x) => x !== d) : [...curr, d]
-                        );
-                      }}
-                    >
-                      <input type="checkbox" checked={selected} readOnly />
-                      <span className="capitalize text-white">{d}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </Field>
-
-          {/* Suitability */}
-          <Field label="Suitability (comma separated)">
-            <input
-              {...register("suitability")}
-              className={inputBase}
-              placeholder="e.g. post-workout, low-calorie, recovery"
-            />
-          </Field>
-
-          {/* Tags */}
-          <Field label="Tags (comma separated)">
-            <input
-              {...register("tags")}
-              className={inputBase}
-              placeholder="e.g. high-protein, low-carb"
-            />
-          </Field>
+          {/* Multi Selects */}
+          {[
+            ["diet_compatibility", DIET_COMPATIBILITY],
+            ["suitability", SUITABILITY_OPTIONS],
+            ["tags", TAG_OPTIONS],
+          ].map(([name, options]) => (
+            <Field key={name} label={name.replace(/_/g, " ")}>
+              <Controller
+                name={name}
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    options={mapToSelectOptions(options)}
+                    isMulti
+                    isClearable
+                    styles={customStyles}
+                    menuPortalTarget={document.body}
+                    menuPosition="fixed"
+                  />
+                )}
+              />
+            </Field>
+          ))}
 
           <Button
             type="submit"
             disabled={loading}
-            className="w-full text-white py-3 rounded-md font-bold focus:outline-none focus:ring-2 focus:ring-green-500 border border-white bg-black hover:border-black"
+            className="w-full text-white py-3 rounded-md font-bold border border-white bg-black hover:border-black"
           >
             {loading ? "Updating..." : "Update Food"}
           </Button>
@@ -285,7 +243,7 @@ const EditFood = () => {
 };
 
 const Field = ({ label, children }) => (
-  <div className="mb-4">
+  <div>
     <label className="block text-white font-medium mb-1">{label}</label>
     {children}
   </div>

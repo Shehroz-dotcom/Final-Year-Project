@@ -104,7 +104,7 @@ const Cart = () => {
       if (response.data?.success) {
         toast.success('🛒 Order placed successfully!');
         clearCart();
-        navigate(`/orderStatus${response.data.order}`);
+        navigate(`/orderStatus/${response.data.branchCode}/${response.data.order}`);
       } else {
         throw new Error(response.data?.message || 'Unknown server error');
       }
@@ -212,7 +212,7 @@ const Cart = () => {
               handlePlaceOrder();
               sendNutritionsData();
             }}
-            className="w-full bg-white text-black font-semibold py-3 rounded-md hover:bg-green-400 transition"
+            className="w-full bg-white text-black font-semibold py-3 rounded-md hover:bg-green-400 transition cursor-pointer"
           >
             Checkout
           </button>

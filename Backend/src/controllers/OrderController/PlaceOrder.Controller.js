@@ -39,6 +39,8 @@ const PlaceOrder = async (req, res) => {
         .json({ success: false, message: 'User not found' });
     }
 
+    const userFullName = user.fullName || 'Unknown'; // <-- use fullName
+
     /* -------------------- Location -------------------- */
     const userCoordinates = user.location?.coordinates;
     if (!Array.isArray(userCoordinates) || userCoordinates.length !== 2) {
@@ -69,21 +71,33 @@ const PlaceOrder = async (req, res) => {
     }
 
     /* -------------------- Find nearest kitchen -------------------- */
-    const nearestKitchen = await CloudKitchenModel.findOne({
-      location: {
-        $near: {
-          $geometry: {
-            type: 'Point',
-            coordinates: userCoordinates,
+    const nearestKitchen = await CloudKitchenModel.findOne(
+      {
+        location: {
+          $near: {
+            $geometry: {
+              type: 'Point',
+              coordinates: userCoordinates,
+            },
           },
         },
       },
-    });
+      { branch_code: 1, orders: 1 }
+    );
 
     if (!nearestKitchen) {
       return res.status(404).json({
         success: false,
         message: 'No nearby cloud kitchen found',
+      });
+    }
+
+    const branchCode = nearestKitchen.branch_code;
+
+    if (!branchCode) {
+      return res.status(500).json({
+        success: false,
+        message: 'Nearest kitchen branch code missing',
       });
     }
 
@@ -93,20 +107,10 @@ const PlaceOrder = async (req, res) => {
         const food = foodItems.find(
           (f) => f._id.toString() === cartItem.foodId.toString()
         );
-        if (!food) {
-          console.warn(
-            `Food not found for cartItem.foodId = ${cartItem.foodId}`
-          );
-          return null; // skip invalid item
-        }
+        if (!food) return null;
 
-        // Use food_name variable instead of food.name
-        const food_name = food.food_name; // assign from DB
-
-        if (!food_name) {
-          console.warn(`Food name missing for ID: ${food._id}`);
-          return null;
-        }
+        const food_name = food.food_name;
+        if (!food_name) return null;
 
         return {
           name: food_name,
@@ -124,9 +128,10 @@ const PlaceOrder = async (req, res) => {
 
     const order = {
       order_id: crypto.randomUUID(),
+      orderedBy: userFullName, // <-- store user's fullName here
       items: orderItems,
       totalPrice: Number(totalPrice) || 0,
-      deliveryAddress: user.address, // ✅ pulled from user profile
+      deliveryAddress: user.address,
       status: 'placed',
       createdAt: new Date(),
     };
@@ -138,10 +143,9 @@ const PlaceOrder = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: 'Order placed and dispatched to nearest kitchen',
-      order: order.order_id
+      order: order.order_id,
+      branchCode: branchCode,
     });
-    console.log(order_id);
-    
   } catch (error) {
     console.error('PlaceOrder ERROR:', error);
     return res.status(500).json({ success: false, message: error.message });

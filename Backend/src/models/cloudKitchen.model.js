@@ -37,6 +37,7 @@ const cloudKitchenSchema = new mongoose.Schema(
     orders: [
       {
         order_id: { type: String, required: true },
+        orderedBy:{type: String, required: true},
         items: [
           {
             name: { type: String, required: true },

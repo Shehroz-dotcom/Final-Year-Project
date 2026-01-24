@@ -2,17 +2,78 @@ import { memo, useContext, useEffect, useState } from 'react';
 import FoodCard from './foodCard.jsx';
 import { FoodContext } from '../Context/FoodContext/FoodContext.jsx';
 
-const DIET_OPTIONS = [
+ const DIET_OPTIONS = [
   'omnivore',
   'vegetarian',
   'vegan',
+  'pescatarian',
   'keto',
+  'keto-friendly',
   'paleo',
   'gluten-free',
+  'low-carb',
+  'low-fat',
+  'high-protein',
+  'high-fiber',
+  'plant-based',
 ];
 
-const SUITABILITY_OPTIONS = ['post-workout', 'low-calorie', 'recovery'];
-const TAG_OPTIONS = ['high-protein', 'low-carb', 'vegan', 'gluten-free'];
+ const SUITABILITY_OPTIONS = [
+  'pre-workout',
+  'post-workout',
+
+  // goals
+  'weight-loss',
+  'weight-gain',
+  'muscle-building',
+  'muscle-gain',
+  'recovery',
+  'heart-healthy',
+  'immune-boosting',
+  'energy-boost',
+  'lean-protein',
+  'plant-based',
+  'balanced',
+  'muscle-maintenance',
+  'balanced-diet',
+  "iron-rich",
+
+  // meal context
+  'snack',
+  'meal',
+  'breakfast',
+  'lunch',
+  'dinner',
+  'high-protein',
+];
+
+const TAG_OPTIONS = [
+  'high-protein',
+  'low-carb',
+  'low-fat',
+  'low-calorie',
+  'high-fiber',
+  'sugar-free',
+  'spicy',
+  'organic',
+
+  // missing but used
+  'healthy-fats',
+  'rich-fat',
+  'omega-3',
+  'heart-healthy',
+  'weight-loss',
+  'weight-gain',
+  'muscle-building',
+  'balanced',
+  'lean-protein',
+  'quick-meal',
+  'immune-boosting',
+  'plant-based',
+  'energy-boost',
+  'vegetarian',
+  'gluten-free',
+];
 
 const FoodCardContainer = () => {
   const { foodData, getFood } = useContext(FoodContext);

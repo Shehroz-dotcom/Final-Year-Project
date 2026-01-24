@@ -1,4 +1,11 @@
 import mongoose from 'mongoose';
+import {
+  TAG_OPTIONS,
+  SUITABILITY_OPTIONS,
+  DIET_COMPATIBILITY,
+  FOOD_CATEGORY,
+  FOOD_TYPE,
+} from '../utils/Nutritions/nutritions.js';
 
 const FoodSchema = new mongoose.Schema(
   {
@@ -34,14 +41,16 @@ const FoodSchema = new mongoose.Schema(
 
     food_category: {
       type: String,
+      enum: FOOD_CATEGORY, // <-- enum applied
       required: [true, 'Category is required'],
-      index: true, // keep
+      index: true,
     },
 
     food_type: {
       type: String,
+      enum: FOOD_TYPE, // <-- enum applied
       required: [true, 'Food type is required'],
-      index: true, // keep
+      index: true,
     },
 
     // Macronutrients per serving
@@ -78,21 +87,27 @@ const FoodSchema = new mongoose.Schema(
     diet_compatibility: [
       {
         type: String,
-        enum: [
-          'omnivore',
-          'vegetarian',
-          'vegan',
-          'keto',
-          'paleo',
-          'gluten-free',
-        ],
+        enum: DIET_COMPATIBILITY,
         index: true, // keep
       },
     ],
 
     // Tags & metadata
-    tags: [{ type: String, required: true, index: true }],
-    suitability: [{ type: String, index: true }],
+    tags: [
+      {
+        type: String,
+        enum: TAG_OPTIONS,
+        required: true,
+        index: true,
+      },
+    ],
+    suitability: [
+      {
+        type: String,
+        enum: SUITABILITY_OPTIONS,
+        index: true,
+      },
+    ],
 
     // Computed fields
     userReviews: [
