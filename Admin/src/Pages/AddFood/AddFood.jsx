@@ -45,8 +45,13 @@ const AddFood = () => {
       formData.append("food_name", data.food_name);
       formData.append("food_description", data.food_description);
       formData.append("food_price", data.food_price);
-      formData.append("food_category", data.food_category);
-      formData.append("food_type", data.food_type);
+
+      // ✅ Single select: extract .value
+      formData.append(
+        "food_category",
+        data.food_category ? data.food_category.value : "",
+      );
+      formData.append("food_type", data.food_type ? data.food_type.value : "");
 
       // Macronutrients
       formData.append("calories", data.calories);
@@ -54,8 +59,8 @@ const AddFood = () => {
       formData.append("protein", data.protein);
       formData.append("carbs", data.carbs);
       formData.append("fat", data.fat);
-      formData.append("fiber", data.fiber);
-      formData.append("sugar", data.sugar);
+      formData.append("fiber", data.fiber || 0);
+      formData.append("sugar", data.sugar || 0);
 
       // Multi-select arrays
       (data.tags || []).forEach((t) => formData.append("tags[]", t.value));
@@ -66,6 +71,7 @@ const AddFood = () => {
         formData.append("diet_compatibility[]", d.value),
       );
 
+      // Send request
       const response = await axios.post(
         `${Url.dev}/api/v1/food/addFood`,
         formData,
