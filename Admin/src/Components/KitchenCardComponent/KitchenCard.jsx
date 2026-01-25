@@ -1,7 +1,8 @@
+// KitchenCard.jsx
 import { memo } from "react";
 import { useNavigate } from "react-router-dom";
 
-const KitchenCard = ({ kitchen }) => {
+const KitchenCard = ({ kitchen, onDelete }) => {
   const navigate = useNavigate();
 
   return (
@@ -10,15 +11,25 @@ const KitchenCard = ({ kitchen }) => {
         Branch Code: {kitchen.branch_code}
       </h2>
 
-      <p className=" mt-2 text-white">Address: {kitchen.address}</p>
+      <p className="mt-2 text-white">Address: {kitchen.address}</p>
 
-      <button
-        onClick={() => navigate(`/kitchens/${kitchen._id}/delivered-orders`)}
-        className="mt-4 bg-green-600 text-white px-4 py-2 rounded-md font-medium
-             hover:bg-green-700 active:bg-green-800 transition-colors duration-200 cursor-pointer"
-      >
-        See Delivered Orders
-      </button>
+      <div className="mt-4 flex flex-wrap gap-3">
+        <button
+          onClick={() => navigate(`/kitchens/${kitchen._id}/delivered-orders`)}
+          className="bg-green-600 text-white px-4 py-2 rounded-md font-medium
+                     hover:bg-green-700 active:bg-green-800 transition-colors"
+        >
+          See Delivered Orders
+        </button>
+
+        <button
+          onClick={() => onDelete(kitchen.branch_code)}
+          className="bg-red-600 text-white px-4 py-2 rounded-md font-medium
+                     hover:bg-red-700 active:bg-red-800 transition-colors"
+        >
+          Delete Kitchen
+        </button>
+      </div>
     </div>
   );
 };
