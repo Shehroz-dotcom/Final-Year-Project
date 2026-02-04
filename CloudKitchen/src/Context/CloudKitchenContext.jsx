@@ -49,6 +49,19 @@ const CloudContextProvider = ({ children }) => {
     }
   };
 
+  const Logout = async () => {
+    try {
+      await axios.post(
+        `${Urls.dev}/api/v1/cloud/logout`,
+        {}, // empty body
+        { withCredentials: true }, // <-- config goes here
+      );
+      window.location.href = "/";
+    } catch (error) {
+      console.log("Cloud logout error:", error.response?.data || error.message);
+    }
+  };
+
   const FetchOrders = async () => {
     try {
       const res = await axios.get(`${Urls.dev}/api/v1/cloud/getOrders`, {
@@ -76,7 +89,7 @@ const CloudContextProvider = ({ children }) => {
     }
   };
 
-  const contextValue = { Register, Login, FetchOrders, handleStatusChange };
+  const contextValue = { Register, Login, FetchOrders, handleStatusChange , Logout };
 
   return (
     <CloudContext.Provider value={contextValue}>
