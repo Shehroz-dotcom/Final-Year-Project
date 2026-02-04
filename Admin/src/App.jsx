@@ -1,5 +1,5 @@
 import { Route, Routes } from "react-router-dom";
-import { AddFood, ListFood, AllKitchens, EditFood , DeliveredOrders} from "./Pages/index.js";
+import { AddFood, ListFood, AllKitchens, EditFood , GetOrders} from "./Pages/index.js";
 import Layout from "./Components/Layout/Layout.jsx";
 
 import { ToastContainer } from "react-toastify";
@@ -18,8 +18,8 @@ const App = () => {
             <Route path="/edit" element={<EditFood />} />
             <Route path="/kitchens" element={<AllKitchens />} />
             <Route
-              path="/kitchens/:id/delivered-orders"
-              element={<DeliveredOrders />}
+              path="/kitchens/:kitchenId"
+              element={<GetOrders />}
             />
           </Routes>
         </Layout>{" "}

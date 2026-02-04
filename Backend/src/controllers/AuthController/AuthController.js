@@ -15,7 +15,7 @@ const checkAuth = (req, res, next) => {
       });
     }
 
-    const decoded = JwtDecode(token); // should throw if invalid
+    const decoded = JwtDecode(token , process.env.ACCESS_TOKEN_SECRET); // should throw if invalid
 
     if (!decoded || !decoded._id) {
       return res.status(403).json({

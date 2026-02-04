@@ -6,7 +6,7 @@ import { FetchOrder } from '../controllers/OrderController/FetchOrder.controller
 const orderRouter = Router();
 
 orderRouter.route('/placeOrder').post(PlaceOrder);
-orderRouter.route('/getOrders').get(FetchAllOrders);
+orderRouter.route('/getOrders/:kitchenId').get(FetchAllOrders);
 orderRouter.route('/getOrder/:branchCode/:orderId').get(FetchOrder);
 
 export { orderRouter };

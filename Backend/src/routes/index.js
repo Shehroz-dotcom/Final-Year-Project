@@ -4,6 +4,7 @@ import { AuthRouter } from './authRoute.js';
 import { orderRouter } from './orderRoute.js';
 import { reviewRouter } from './reviewRoutes.js';
 import { cloudRouter } from './cloudRoute.js';
+import { AdminRouter } from './adminRoutes.js';
 // import { paymentRouter } from './paymentRoute.js';
 export {
   foodRouter,
@@ -12,5 +13,6 @@ export {
   orderRouter,
   reviewRouter,
   cloudRouter,
+  AdminRouter,
   // paymentRouter,
 };

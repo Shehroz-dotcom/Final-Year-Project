@@ -10,9 +10,10 @@ const CloudContextProvider = ({ children }) => {
     try {
       const response = await axios.post(
         `${Urls.dev}/api/v1/cloud/register`,
-        credentials, {withCredentials: true}
+        credentials,
+        { withCredentials: true },
       );
-     
+
       return response.data; // optional
     } catch (error) {
       if (error.response) {
@@ -30,7 +31,8 @@ const CloudContextProvider = ({ children }) => {
     try {
       const response = await axios.post(
         `${Urls.dev}/api/v1/cloud/login`,
-        credentials, {withCredentials: true}
+        credentials,
+        { withCredentials: true },
       );
       console.log("data sent to backend:", credentials);
       console.log("backend response:", response.data);
@@ -47,7 +49,34 @@ const CloudContextProvider = ({ children }) => {
     }
   };
 
-  const contextValue = { Register, Login };
+  const FetchOrders = async () => {
+    try {
+      const res = await axios.get(`${Urls.dev}/api/v1/cloud/getOrders`, {
+        withCredentials: true,
+      });
+      return res.data.orders; // return orders
+    } catch (error) {
+      console.error("Failed to fetch orders:", error.response?.data || error);
+      return [];
+    }
+  };
+
+  const handleStatusChange = async (orderId, newStatus) => {
+    try {
+      const res = await axios.patch(
+        `${Urls.dev}/api/v1/cloud/${orderId}/status`,
+        { status: newStatus },
+        { withCredentials: true },
+      );
+
+      return res.data; // { success: true }
+    } catch (error) {
+      console.error("Status update failed:", error.response?.data || error);
+      throw error;
+    }
+  };
+
+  const contextValue = { Register, Login, FetchOrders, handleStatusChange };
 
   return (
     <CloudContext.Provider value={contextValue}>

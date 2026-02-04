@@ -15,7 +15,7 @@ const KitchenCard = ({ kitchen, onDelete }) => {
 
       <div className="mt-4 flex flex-wrap gap-3">
         <button
-          onClick={() => navigate(`/kitchens/${kitchen._id}/delivered-orders`)}
+          onClick={() => navigate(`/kitchens/${kitchen._id}`)}
           className="bg-green-600 text-white px-4 py-2 rounded-md font-medium
                      hover:bg-green-700 active:bg-green-800 transition-colors"
         >

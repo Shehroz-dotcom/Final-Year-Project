@@ -8,6 +8,7 @@ import {
   orderRouter,
   reviewRouter,
   cloudRouter,
+  AdminRouter,
   // paymentRouter
 } from './routes/index.js';
 
@@ -58,6 +59,8 @@ app.use('/api/v1/order', orderRouter);
 app.use('/api/v1/review', reviewRouter);
 //cloud kitchen routes 
 app.use('/api/v1/cloud', cloudRouter);
+//admin routes 
+app.use('/api/v1/admin', AdminRouter)
 
 //payment Routes
 // app.use('/api/v1/payment',paymentRouter);

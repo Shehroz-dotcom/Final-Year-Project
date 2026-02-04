@@ -24,7 +24,7 @@ const PlaceOrder = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
 
-    const decoded = JwtDecode(token);
+    const decoded = JwtDecode(token, process.env.ACCESS_TOKEN_SECRET);
     const userId = decoded?._id;
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
