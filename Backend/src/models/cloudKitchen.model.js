@@ -95,7 +95,7 @@ cloudKitchenSchema.methods.generateAccessToken = function () {
 cloudKitchenSchema.methods.generateRefreshToken = function () {
   return jwt.sign(
     { _id: this._id },
-    process.env.CLOUDKITCHEN_REFESH_TOKEN_SECRET, // fixed typo
+    process.env.CLOUDKITCHEN_REFRESH_TOKEN_SECRET, // fixed typo
     {
       expiresIn: process.env.CLOUDKITCHEN_REFRESH_TOKEN_SECRET_EXPIRY,
     }
