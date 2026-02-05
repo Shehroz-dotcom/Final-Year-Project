@@ -9,38 +9,60 @@ const OrderStatus = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Countdown state
-  const [timeLeft, setTimeLeft] = useState(45 * 60); // 45 minutes in seconds
+  const [timeLeft, setTimeLeft] = useState(45 * 60); // 45 minutes
+  const [orderDelivered, setOrderDelivered] = useState(false); // track if marked delivered
 
+  // Fetch order function
+  const fetchOrder = async () => {
+    try {
+      const response = await axios.get(
+        `${Urls.dev}/api/v1/order/getOrder/${branchCode}/${orderId}`
+      );
+      setOrder(response.data.order);
+      setError(null);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to fetch order');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch order once on mount
   useEffect(() => {
-    const fetchOrder = async () => {
-      try {
-        const response = await axios.get(
-          `${Urls.dev}/api/v1/order/getOrder/${branchCode}/${orderId}`
-        );
-        setOrder(response.data.order);
-      } catch (err) {
-        setError(err.response?.data?.message || 'Failed to fetch order');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchOrder();
-  }, [branchCode, orderId]);
+  }, []);
 
   // Countdown timer
   useEffect(() => {
     if (timeLeft <= 0) return;
 
-    const interval = setInterval(() => {
-      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+    const countdownInterval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(countdownInterval);
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
 
-    return () => clearInterval(interval);
-  }, [timeLeft]);
+    return () => clearInterval(countdownInterval);
+  }, []);
 
-  // Format seconds -> MM:SS
+  // Fetch order every 10 minutes until mark delivered becomes active
+  useEffect(() => {
+    if (timeLeft <= 5 * 60 || orderDelivered) return; // stop fetching when 5 min left or delivered
+
+    const fetchInterval = setInterval(
+      () => {
+        fetchOrder();
+      },
+      10 * 60 * 1000
+    ); // 10 minutes
+
+    return () => clearInterval(fetchInterval);
+  }, [timeLeft, orderDelivered]);
+
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60)
       .toString()
@@ -49,11 +71,10 @@ const OrderStatus = () => {
     return `${m}:${s}`;
   };
 
-  // Button enabled after 5 minutes remaining
-  const isMarkDeliveredActive = timeLeft <= 5 * 60; // 5 min = 300 sec
+  const isMarkDeliveredActive = timeLeft <= 5 * 60;
 
   const handleMarkDelivered = () => {
-    // You can call API to update order status here
+    setOrderDelivered(true); // stop further API calls
     alert('Order marked as delivered!');
   };
 
@@ -81,7 +102,6 @@ const OrderStatus = () => {
       <div className="bg-black backdrop-blur-md rounded-xl shadow-xl max-w-md w-full p-6 text-white">
         <h2 className="text-2xl font-bold mb-4 text-center">Order Status</h2>
 
-        {/* Countdown Timer */}
         <div className="mb-4 text-center">
           <span className="text-yellow-400 font-bold text-xl">
             {formatTime(timeLeft)}
@@ -116,7 +136,6 @@ const OrderStatus = () => {
           </span>
         </p>
 
-        {/* Mark Delivered Button */}
         <button
           onClick={handleMarkDelivered}
           disabled={!isMarkDeliveredActive}
@@ -129,6 +148,9 @@ const OrderStatus = () => {
         >
           Mark Delivered
         </button>
+        <p className="text-red-600 font-bold mt-4">
+          Don't leave this page ... !
+        </p>
       </div>
     </div>
   );

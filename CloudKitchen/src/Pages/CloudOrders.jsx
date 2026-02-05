@@ -1,13 +1,11 @@
 import { memo, useEffect, useState, useContext } from "react";
 import { CloudContext } from "../Context/CloudKitchenContext.jsx";
 import React from "react";
-import axios from "axios";
-import Urls from "../../../FrontEnd/src/utils/Urls.js"
-// Status options for the dropdown
+
 const STATUS_OPTIONS = ["placed", "cooking", "out for delivery", "delivered"];
 
 const CloudOrders = () => {
-  const { FetchOrders, handleStatusChange , Logout} = useContext(CloudContext);
+  const { FetchOrders, handleStatusChange, Logout } = useContext(CloudContext);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -15,7 +13,11 @@ const CloudOrders = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       const fetchedOrders = await FetchOrders();
-      setOrders(fetchedOrders);
+      // Reverse so newest orders appear first
+      const sortedOrders = fetchedOrders
+        .slice()
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setOrders(sortedOrders);
       setLoading(false);
     };
     fetchOrders();
@@ -27,19 +29,20 @@ const CloudOrders = () => {
       const res = await handleStatusChange(orderId, newStatus);
       if (res?.success) {
         setOrders((prevOrders) =>
-          prevOrders.map((order) =>
-            order.order_id === orderId
-              ? { ...order, status: newStatus }
-              : order,
-          ),
+          prevOrders
+            .map((order) =>
+              order.order_id === orderId
+                ? { ...order, status: newStatus }
+                : order,
+            )
+            // Re-sort to keep newest orders at the top
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)),
         );
       }
     } catch (error) {
       console.error("Status update failed");
     }
   };
-
- 
 
   if (loading) {
     return (
