@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+
 import {
   foodRouter,
   userRouter,
@@ -8,6 +9,7 @@ import {
   orderRouter,
   reviewRouter,
   cloudRouter,
+  sendContactEmailrouter
   // paymentRouter
 } from './routes/index.js';
 
@@ -49,6 +51,14 @@ app.use(cookieParser());
 // ✅ Routes (AFTER parsers)
 //geting address cordinatess api
 
+// Contact Routes
+app.use("/api/v1/contact", sendContactEmailrouter);
+
+app.get("/test", (req, res) => {
+  res.send("Backend working");
+});
+
+
 //food routes
 app.use('/api/v1/food', foodRouter);
 //user routes
@@ -65,5 +75,7 @@ app.use('/api/v1/cloud', cloudRouter);
 app.get('/', (req, res) => {
   res.send('Api working');
 });
+
+
 
 export { app };

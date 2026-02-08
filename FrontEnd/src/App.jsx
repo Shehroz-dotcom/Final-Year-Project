@@ -14,11 +14,12 @@ import FoodContextProvider from './Context/FoodContext/FoodContext.jsx';
 import CartContextProvider from './Context/CartContext/CartContext.jsx';
 import ProtectedRoute from './Components/ProtectedRoute.jsx';
 import AuthProvider from './Context/AuthContext/AuthContext.jsx';
-import Contact from './Pages/Contact.jsx';
 import FoodDetails from './Pages/FoodDetails.jsx';
 import Forget_Password from './Pages/Forget_Password.jsx';
 import Reset_Password from './Pages/Reset_Password.jsx';
 import UserProfilePage from './Pages/UserProfilePage.jsx';
+import About from './Pages/About.jsx';
+import Contact from './Pages/Contact.jsx';
 
 const App = () => {
   return (
@@ -45,9 +46,11 @@ const App = () => {
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/about" element={<About/>}/>
+                <Route path="/contact" element={<Contact />} />
+              
 
                 <Route path="/register" element={<Register />} />
-                <Route path="/contact" element={<Contact />} />
                 <Route path="/food/:id" element={<FoodDetails />} />
                 <Route path="/forget_Password" element={<Forget_Password />} />
                 <Route
