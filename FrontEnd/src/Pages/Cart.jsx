@@ -5,15 +5,16 @@ import { toast } from 'react-toastify';
 import { CartContext } from '../Context/CartContext/CartContext.jsx';
 import Urls from '../utils/Urls.js';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+
 import { FaTimes } from 'react-icons/fa';
 
-
 const Cart = () => {
+  const navigate = useNavigate();
   const { foodData, getFood } = useContext(FoodContext);
   const { userData } = useContext(UserContext);
   const address = userData.address;
   const name = userData.fullName;
-  console.log(address, name);
 
   const {
     // here i have all the order food id's which i can use by sending to backend api and getting the food details  and geting its nutrition and saving for the user
@@ -65,23 +66,33 @@ const Cart = () => {
   }, [foodData, cartItems]);
 
   const sendNutritionsData = async () => {
-    console.log('nutrition data function');
     const response = await axios.post(
       `${Urls.dev}/api/v1/user/saveNutritions`,
       { cartItems },
       { withCredentials: true }
     );
-    console.log("nutriton send response ",response);
-    
   };
   const handlePlaceOrder = async () => {
     try {
+      if (!cartItems || Object.keys(cartItems).length === 0) {
+        toast.error('Cart is empty!');
+        return;
+      }
+
+      // Convert cartItems object to array
+      const cartArray = Object.entries(cartItems).map(([foodId, quantity]) => ({
+        foodId,
+        quantity,
+      }));
+
+      if (cartArray.length === 0) {
+        toast.error('Cart is empty!');
+        return;
+      }
+
       const payload = {
-        name,
-        address,
-        cart: cartItems,
-        totalPrice: totalPrice.toFixed(2),
-        totalCalories,
+        totalPrice,
+        cart: cartArray, // now sending as array
       };
 
       const response = await axios.post(
@@ -90,23 +101,16 @@ const Cart = () => {
         { withCredentials: true }
       );
 
-      // ✅ Only show success if backend confirms
       if (response.data?.success) {
-        toast.success('🛒 Order placed successfully!', {
-          position: 'top-right',
-          autoClose: 3000,
-        });
-
-        clearCart(); // clears both React state and sessionStorage
+        toast.success('🛒 Order placed successfully!');
+        clearCart();
+        navigate(`/orderStatus/${response.data.branchCode}/${response.data.order}`);
       } else {
         throw new Error(response.data?.message || 'Unknown server error');
       }
     } catch (error) {
       console.error('Order failed:', error);
-      toast.error(`❌ Failed to place order: ${error.message}`, {
-        position: 'top-right',
-        autoClose: 3000,
-      });
+      toast.error(`❌ Failed to place order: ${error.message}`);
     }
   };
 
@@ -208,7 +212,7 @@ const Cart = () => {
               handlePlaceOrder();
               sendNutritionsData();
             }}
-            className="w-full bg-white text-black font-semibold py-3 rounded-md hover:bg-green-400 transition"
+            className="w-full bg-white text-black font-semibold py-3 rounded-md hover:bg-green-400 transition cursor-pointer"
           >
             Checkout
           </button>

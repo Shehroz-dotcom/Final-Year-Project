@@ -18,8 +18,7 @@ import FoodDetails from './Pages/FoodDetails.jsx';
 import Forget_Password from './Pages/Forget_Password.jsx';
 import Reset_Password from './Pages/Reset_Password.jsx';
 import UserProfilePage from './Pages/UserProfilePage.jsx';
-import About from './Pages/About.jsx';
-import Contact from './Pages/Contact.jsx';
+import OrderStatus from './Pages/OrderStatus.jsx';
 
 const App = () => {
   return (
@@ -67,6 +66,15 @@ const App = () => {
                   element={
                     <ProtectedRoute>
                       <UserProfilePage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/orderStatus/:branchCode/:orderId"
+                  element={
+                    <ProtectedRoute>
+                      <OrderStatus />
                     </ProtectedRoute>
                   }
                 />

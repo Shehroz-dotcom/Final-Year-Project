@@ -13,7 +13,7 @@ const userOrder = async (req, res) => {
     }
 
     // 🧠 Decode token to extract user ID
-    const decoded = JwtDecode(token);
+    const decoded = JwtDecode(token , process.env.ACCESS_TOKEN_SECRET);
     const userId = decoded._id;
 
     // 🛒 Extract order data

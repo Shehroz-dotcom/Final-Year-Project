@@ -1,7 +1,7 @@
 import React, { memo, useContext, useState } from "react";
 import { useForm } from "react-hook-form";
 import { FiMapPin } from "react-icons/fi";
-
+import { useNavigate } from "react-router-dom";
 import Input from "../components/input.jsx";
 import UserLocationMap from "../components/UserLocation.jsx";
 import { CloudContext } from "../Context/CloudKitchenContext.jsx";
@@ -9,6 +9,7 @@ import { getUserLocation } from "../Utils/getUserLocation.js";
 import { reverseGeocode } from "../Utils/reverseGeocoder.js";
 
 const Register = () => {
+  const navigate = useNavigate();
   const [coords, setCoords] = useState(null); // [lat, lng]
   const [locationError, setLocationError] = useState(null);
   const [showMap, setShowMap] = useState(false);
@@ -35,15 +36,22 @@ const Register = () => {
       }
     }
   };
-
   const onSubmit = async (data) => {
     try {
       if (coords) {
         data.latitude = coords[0];
         data.longitude = coords[1];
       }
-      await registerCloudKitchen(data);
-    } catch (err) {}
+
+      const result = await registerCloudKitchen(data);
+      if (result.success) {
+        navigate("/cloudOrders");
+      }
+
+      console.log("✅ Registration successful", result);
+    } catch (err) {
+      console.error("❌ Registration failed:", err);
+    }
   };
 
   return (
@@ -99,7 +107,7 @@ const Register = () => {
                 try {
                   const addressString = await reverseGeocode(
                     newCoords[0],
-                    newCoords[1]
+                    newCoords[1],
                   );
                   // Update the form address field
                   setValue("address", addressString);

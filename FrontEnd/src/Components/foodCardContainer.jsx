@@ -2,17 +2,78 @@ import { memo, useContext, useEffect, useState } from 'react';
 import FoodCard from './foodCard.jsx';
 import { FoodContext } from '../Context/FoodContext/FoodContext.jsx';
 
-const DIET_OPTIONS = [
+ const DIET_OPTIONS = [
   'omnivore',
   'vegetarian',
   'vegan',
+  'pescatarian',
   'keto',
+  'keto-friendly',
   'paleo',
   'gluten-free',
+  'low-carb',
+  'low-fat',
+  'high-protein',
+  'high-fiber',
+  'plant-based',
 ];
 
-const SUITABILITY_OPTIONS = ['post-workout', 'low-calorie', 'recovery'];
-const TAG_OPTIONS = ['high-protein', 'low-carb', 'vegan', 'gluten-free'];
+ const SUITABILITY_OPTIONS = [
+  'pre-workout',
+  'post-workout',
+
+  // goals
+  'weight-loss',
+  'weight-gain',
+  'muscle-building',
+  'muscle-gain',
+  'recovery',
+  'heart-healthy',
+  'immune-boosting',
+  'energy-boost',
+  'lean-protein',
+  'plant-based',
+  'balanced',
+  'muscle-maintenance',
+  'balanced-diet',
+  "iron-rich",
+
+  // meal context
+  'snack',
+  'meal',
+  'breakfast',
+  'lunch',
+  'dinner',
+  'high-protein',
+];
+
+const TAG_OPTIONS = [
+  'high-protein',
+  'low-carb',
+  'low-fat',
+  'low-calorie',
+  'high-fiber',
+  'sugar-free',
+  'spicy',
+  'organic',
+
+  // missing but used
+  'healthy-fats',
+  'rich-fat',
+  'omega-3',
+  'heart-healthy',
+  'weight-loss',
+  'weight-gain',
+  'muscle-building',
+  'balanced',
+  'lean-protein',
+  'quick-meal',
+  'immune-boosting',
+  'plant-based',
+  'energy-boost',
+  'vegetarian',
+  'gluten-free',
+];
 
 const FoodCardContainer = () => {
   const { foodData, getFood } = useContext(FoodContext);
@@ -87,7 +148,7 @@ const FoodCardContainer = () => {
   return (
     <div className="w-full mt-8  flex flex-col  items-center gap-6">
       {/* Filters */}
-      <div className="w-full px-4  md:px-0 bg-black border border-white/10 rounded-lg p-5 flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-4 sm:gap-6 justify-between">
+      <div className="w-full  px-4  md:px-0 bg-black border border-white/10 rounded-lg p-5 flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-4 sm:gap-6 justify-between">
         {/* Category */}
         <div className="flex flex-col text-white w-full">
           <label className="text-xs uppercase text-gray-400 mb-1">

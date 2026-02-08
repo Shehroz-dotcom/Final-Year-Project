@@ -1,9 +1,11 @@
 import React, { memo, useContext } from "react";
 import { useForm } from "react-hook-form";
 import Input from "../components/input.jsx";
+import {useNavigate} from "react-router-dom"
 import { CloudContext } from "../Context/CloudKitchenContext.jsx";
 
 const Loginpage = () => {
+  const navigate = useNavigate()
   const { Login } = useContext(CloudContext);
   const {
     register,
@@ -13,9 +15,15 @@ const Loginpage = () => {
 
   const onSubmit = async (credentials) => {
     try {
-      console.log(credentials, "login page ");
 
-      await Login(credentials);
+      const response = await Login(credentials);
+      console.log(response);
+      
+      if(response.success) {
+        navigate("/cloudOrders")
+        
+        
+      }
     } catch (error) {}
   };
 

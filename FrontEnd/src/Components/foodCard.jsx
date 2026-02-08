@@ -34,6 +34,7 @@ const FoodCard = ({ food }) => {
   return (
     <div
       className="
+      cursor-pointer
         w-full
         rounded-lg
         bg-[#0d0d0d]/80

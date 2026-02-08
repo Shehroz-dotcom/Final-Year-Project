@@ -1,111 +1,155 @@
-import OrderModel from '../../models/order.model.js';
 import foodModel from '../../models/food.model.js';
 import userModel from '../../models/user.model.js';
+import CloudKitchenModel from '../../models/cloudKitchen.model.js';
 import { JwtDecode } from '../../utils/JwtDecode/JwtDecode.js';
+import mongoose from 'mongoose';
+import crypto from 'crypto';
+import { log } from 'console';
 
 const PlaceOrder = async (req, res) => {
   try {
     const { cart, totalPrice } = req.body;
-    const token = req.cookies?.accessToken;
 
-    if (!token) {
-      return res
-        .status(401)
-        .json({ message: 'Unauthorized — no access token' });
-    }
-
-    const decodedToken = JwtDecode(token);
-    const user = await userModel.findById(decodedToken._id);
-    if (!user) {
-      return res
-        .status(401)
-        .json({ message: 'Unauthorized — user does not exist' });
-    }
-
-    const delivery_address = user.address;
-    const name = user.fullName;
-
-    if (!cart || Object.keys(cart).length === 0) {
-      return res.status(400).json({ message: 'Cart is empty' });
-    }
-
-    // Convert cart object to array and ensure quantities are numbers
-    const cartArray = Object.entries(cart).map(([foodId, quantity]) => ({
-      foodId,
-      quantity: Number(quantity),
-    }));
-
-    const foodIds = cartArray.map((item) => item.foodId);
-    const foods = await foodModel.find({ _id: { $in: foodIds } });
-
-    if (foods.length !== cartArray.length) {
-      return res.status(400).json({ message: 'Invalid food item in cart' });
-    }
-
-    let calculatedTotal = 0;
-
-    // Build order items safely
-    const items = cartArray.map((cartItem) => {
-      const food = foods.find((f) => f._id.toString() === cartItem.foodId);
-
-      if (!food) {
-        throw new Error(`Food not found for ID: ${cartItem.foodId}`);
-      }
-
-      const quantity = Number(cartItem.quantity);
-      if (isNaN(quantity) || quantity <= 0) {
-        throw new Error(`Invalid quantity for food ID: ${cartItem.foodId}`);
-      }
-
-      const price = Number(food.food_price);
-      if (isNaN(price)) {
-        throw new Error(`Invalid price for food ID: ${cartItem.foodId}`);
-      }
-
-      const itemTotal = price * quantity;
-      calculatedTotal += itemTotal;
-
-      return {
-        foodId: food._id,
-        foodName: food.food_name,
-        quantity,
-        price,
-        total: itemTotal,
-      };
-    });
-
-    // Safe floating-point comparison
-    if (Math.abs(Number(totalPrice) - calculatedTotal) > 0.01) {
+    // Validate cart
+    if (!Array.isArray(cart) || cart.length === 0) {
       return res.status(400).json({
-        message: 'Price mismatch. Please refresh cart.',
-        calculatedTotal,
+        success: false,
+        message: 'Cart must be a non-empty array',
       });
     }
 
-    // Create and save order
-    const order = new OrderModel({
-      name,
-      address: delivery_address,
-      items,
-      amount: calculatedTotal,
-    });
+    /* -------------------- Auth -------------------- */
+    const token = req.cookies?.accessToken;
+    if (!token) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
 
-    await order.save();
+    const decoded = JwtDecode(token, process.env.ACCESS_TOKEN_SECRET);
+    const userId = decoded?._id;
 
-    // Return success + clearCart signal
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(401).json({ success: false, message: 'Invalid token' });
+    }
+
+    /* -------------------- User -------------------- */
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: 'User not found' });
+    }
+
+    const userFullName = user.fullName || 'Unknown'; // <-- use fullName
+
+    /* -------------------- Location -------------------- */
+    const userCoordinates = user.location?.coordinates;
+    if (!Array.isArray(userCoordinates) || userCoordinates.length !== 2) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Invalid user location' });
+    }
+
+    /* -------------------- User Address -------------------- */
+    if (!user.address || typeof user.address !== 'string') {
+      return res.status(400).json({
+        success: false,
+        message: 'User delivery address not found',
+      });
+    }
+
+    /* -------------------- Fetch food items -------------------- */
+    const foodIds = cart
+      .map((item) => item.foodId)
+      .filter((id) => mongoose.Types.ObjectId.isValid(id));
+
+    const foodItems = await foodModel.find({ _id: { $in: foodIds } });
+
+    if (!foodItems.length) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'No valid food items found' });
+    }
+
+    /* -------------------- Find nearest kitchen -------------------- */
+    const nearestKitchen = await CloudKitchenModel.findOne(
+      {
+        location: {
+          $near: {
+            $geometry: {
+              type: 'Point',
+              coordinates: userCoordinates,
+            },
+          },
+        },
+      },
+      { branch_code: 1, orders: 1 }
+    );
+
+    if (!nearestKitchen) {
+      return res.status(404).json({
+        success: false,
+        message: 'No nearby cloud kitchen found',
+      });
+    }
+
+    const branchCode = nearestKitchen.branch_code;
+
+    if (!branchCode) {
+      return res.status(500).json({
+        success: false,
+        message: 'Nearest kitchen branch code missing',
+      });
+    }
+
+    /* -------------------- Build order -------------------- */
+    const orderItems = cart
+      .map((cartItem) => {
+        const food = foodItems.find(
+          (f) => f._id.toString() === cartItem.foodId.toString()
+        );
+        if (!food) return null;
+
+        const food_name = food.food_name;
+        if (!food_name) return null;
+
+        return {
+          name: food_name,
+          quantity: Number(cartItem.quantity) || 1,
+        };
+      })
+      .filter(Boolean);
+
+    if (orderItems.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cart contains invalid food items',
+      });
+    }
+
+    const order = {
+      order_id: crypto.randomUUID(),
+      orderedBy: userFullName, // <-- store user's fullName here
+      items: orderItems,
+      totalPrice: Number(totalPrice) || 0,
+      deliveryAddress: user.address,
+      status: 'placed',
+      createdAt: new Date(),
+    };
+
+    /* -------------------- Dispatch order -------------------- */
+    nearestKitchen.orders.push(order);
+    await nearestKitchen.save();
+
     return res.status(201).json({
       success: true,
-      order,
-      clearCart: true,
+      message: 'Order placed and dispatched to nearest kitchen',
+      order: order.order_id,
+      branchCode: branchCode,
     });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({
-      message: 'Order placement failed',
-      error: error.message,
-    });
+    console.error('PlaceOrder ERROR:', error);
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
 export { PlaceOrder };
-//handle payment issues

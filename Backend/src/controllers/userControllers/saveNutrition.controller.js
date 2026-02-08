@@ -9,7 +9,7 @@ const saveNutrition = async (req, res) => {
         .status(401)
         .json({ message: 'Unauthorized - no access token' });
 
-    const decoded = JwtDecode(token);
+    const decoded = JwtDecode(token , process.env.ACCESS_TOKEN_SECRET);
     const userId = decoded._id;
 
     const user = await userModel.findById(userId);
