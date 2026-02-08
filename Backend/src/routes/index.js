@@ -5,6 +5,7 @@ import { orderRouter } from './orderRoute.js';
 import { reviewRouter } from './reviewRoutes.js';
 import { cloudRouter } from './cloudRoute.js';
 import { AdminRouter } from './adminRoutes.js';
+import { sendContactEmailrouter } from './contactRoutes.js';
 // import { paymentRouter } from './paymentRoute.js';
 export {
   foodRouter,

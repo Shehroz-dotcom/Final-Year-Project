@@ -161,18 +161,9 @@ const AddFood = () => {
         {/* Category & Price */}
         <div className="grid grid-cols-2 gap-4">
           <Field label="Category" error={errors.food_category}>
-<<<<<<< HEAD
-            <select
-              {...register("food_category", { required: true })}
-              className={inputBase}
-            >
-              <option value="" className="text-black">Select</option>
-              <option value="Main Course" className="text-black">Main Course</option>
-              <option value="Snacks" className="text-black">Snacks</option>
-              <option value="Breakfast" className="text-black">Breakfast</option>
-              <option value="Salad " className="text-black">Salad</option>
-            </select>
-=======
+
+           
+
             <Controller
               name="food_category"
               control={control}
@@ -189,7 +180,7 @@ const AddFood = () => {
                 />
               )}
             />
->>>>>>> upstream/temop
+
           </Field>
 
           <Field label="Price" error={errors.food_price}>

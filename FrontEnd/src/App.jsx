@@ -19,6 +19,8 @@ import Forget_Password from './Pages/Forget_Password.jsx';
 import Reset_Password from './Pages/Reset_Password.jsx';
 import UserProfilePage from './Pages/UserProfilePage.jsx';
 import OrderStatus from './Pages/OrderStatus.jsx';
+import About from "./Pages/About.jsx"
+import Contact from "./Pages/Contact.jsx"
 
 const App = () => {
   return (
@@ -44,6 +46,8 @@ const App = () => {
             >
               <Routes>
                 <Route path="/" element={<Home />} />
+                 <Route path="/about" element={<About />} />
+
                 <Route path="/login" element={<Login />} />
                 <Route path="/about" element={<About/>}/>
                 <Route path="/contact" element={<Contact />} />
