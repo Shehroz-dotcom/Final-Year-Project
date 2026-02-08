@@ -2,6 +2,7 @@ import { memo, useEffect, useContext } from 'react';
 import HeroSection from '../Components/HeroSection.jsx';
 import FoodCardContainer from '../Components/foodCardContainer.jsx';
 import { AuthContext } from '../Context/AuthContext/AuthContext.jsx';
+import RecommendationContainer from '../Components/RecommendationContainer.jsx';
 
 const Home = () => {
   const { checkAuth } = useContext(AuthContext);
@@ -13,6 +14,8 @@ const Home = () => {
     <div>
       {' '}
       <HeroSection />
+     
+      <RecommendationContainer />
       <FoodCardContainer />
     </div>
   );
