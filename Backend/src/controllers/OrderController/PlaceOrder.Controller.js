@@ -4,7 +4,6 @@ import CloudKitchenModel from '../../models/cloudKitchen.model.js';
 import { JwtDecode } from '../../utils/JwtDecode/JwtDecode.js';
 import mongoose from 'mongoose';
 import crypto from 'crypto';
-import { log } from 'console';
 
 const PlaceOrder = async (req, res) => {
   try {

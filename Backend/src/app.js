@@ -9,6 +9,7 @@ import {
   reviewRouter,
   cloudRouter,
   AdminRouter,
+  nlpRouter
   // paymentRouter
 } from './routes/index.js';
 
@@ -49,6 +50,8 @@ app.use(cookieParser());
 
 // ✅ Routes (AFTER parsers)
 //geting address cordinatess api
+//nlp routes 
+app.use('/api/v1/nlp' , nlpRouter)
 
 //food routes
 app.use('/api/v1/food', foodRouter);

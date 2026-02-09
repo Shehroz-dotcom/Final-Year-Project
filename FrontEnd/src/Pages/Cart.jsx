@@ -65,14 +65,10 @@ const Cart = () => {
     setTotalCalories(calorieSum);
   }, [foodData, cartItems]);
 
-  const sendNutritionsData = async () => {
-    const response = await axios.post(
-      `${Urls.dev}/api/v1/user/saveNutritions`,
-      { cartItems },
-      { withCredentials: true }
-    );
-  };
-  const handlePlaceOrder = async () => {
+
+
+ 
+  const handleCheckout = async () => {
     try {
       if (!cartItems || Object.keys(cartItems).length === 0) {
         toast.error('Cart is empty!');
@@ -85,32 +81,43 @@ const Cart = () => {
         quantity,
       }));
 
-      if (cartArray.length === 0) {
-        toast.error('Cart is empty!');
-        return;
-      }
+      const payload = { cart: cartArray, totalPrice };
 
-      const payload = {
-        totalPrice,
-        cart: cartArray, // now sending as array
-      };
-
-      const response = await axios.post(
+      // 1️⃣ Place the order first
+      const orderResponse = await axios.post(
         `${Urls.dev}/api/v1/order/placeOrder`,
         payload,
         { withCredentials: true }
       );
 
-      if (response.data?.success) {
-        toast.success('🛒 Order placed successfully!');
-        clearCart();
-        navigate(`/orderStatus/${response.data.branchCode}/${response.data.order}`);
-      } else {
-        throw new Error(response.data?.message || 'Unknown server error');
+      if (!orderResponse.data?.success) {
+        throw new Error(orderResponse.data?.message || 'Failed to place order');
       }
+
+      toast.success('🛒 Order placed successfully!');
+      clearCart();
+      navigate(
+        `/orderStatus/${orderResponse.data.branchCode}/${orderResponse.data.order}`
+      );
+
+      // 2️⃣ Only after order success, update nutrition data
+      await axios.post(
+        `${Urls.dev}/api/v1/user/saveNutritions`,
+        { cart: cartArray },
+        { withCredentials: true }
+      );
+
+      // 3️⃣ Update food attributes
+      await axios.post(
+        `${Urls.dev}/api/v1/order/UpdateFoodNutrition`,
+        { cart: cartArray },
+        { withCredentials: true }
+      );
     } catch (error) {
-      console.error('Order failed:', error);
-      toast.error(`❌ Failed to place order: ${error.message}`);
+      console.error('Checkout failed:', error);
+      toast.error(
+        `❌ Checkout failed: ${error.response?.data?.message || error.message}`
+      );
     }
   };
 
@@ -209,8 +216,9 @@ const Cart = () => {
 
           <button
             onClick={() => {
-              handlePlaceOrder();
-              sendNutritionsData();
+              handleCheckout();
+              // sendNutritionsData();
+              // updateFoodAttributes();
             }}
             className="w-full bg-white text-black font-semibold py-3 rounded-md hover:bg-green-400 transition cursor-pointer"
           >

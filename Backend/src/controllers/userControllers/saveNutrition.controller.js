@@ -1,26 +1,28 @@
 import { JwtDecode } from '../../utils/JwtDecode/JwtDecode.js';
 import userModel from '../../models/user.model.js';
 import foodModel from '../../models/food.model.js';
+
 const saveNutrition = async (req, res) => {
   try {
-    const token = req.cookies.accessToken;
+    const token = req.cookies?.accessToken;
     if (!token)
       return res
         .status(401)
         .json({ message: 'Unauthorized - no access token' });
 
-    const decoded = JwtDecode(token , process.env.ACCESS_TOKEN_SECRET);
+    const decoded = JwtDecode(token, process.env.ACCESS_TOKEN_SECRET);
     const userId = decoded._id;
 
     const user = await userModel.findById(userId);
     if (!user) return res.status(404).json({ message: 'User does not exist' });
 
-    const { cartItems } = req.body;
+    const { cart } = req.body; // use cart array sent from frontend
+    if (!Array.isArray(cart) || cart.length === 0) {
+      return res.status(400).json({ success: false, message: 'Cart is empty' });
+    }
 
-    // Get only the foods that are in the cart
-    ///extract all ids from cartItems and save them in foodIds
-    //use foodIds to stract foods with the matching ids and save them in foodItems
-    const foodIds = Object.keys(cartItems);
+    // Extract all foodIds from cart
+    const foodIds = cart.map((item) => item.foodId);
     const foodItems = await foodModel.find({ _id: { $in: foodIds } });
 
     // Initialize totals
@@ -29,9 +31,11 @@ const saveNutrition = async (req, res) => {
     let totalCarbs = 0;
     let totalFats = 0;
 
-    // Compute totals
+    // Compute totals safely
     for (const food of foodItems) {
-      const quantity = cartItems[food._id.toString()] || 0;
+      const cartItem = cart.find((c) => c.foodId === food._id.toString());
+      const quantity = cartItem?.quantity || 0;
+
       totalCalories += food.calories * quantity;
       totalProtein += food.protein * quantity;
       totalCarbs += food.carbs * quantity;
@@ -53,9 +57,9 @@ const saveNutrition = async (req, res) => {
       .status(200)
       .json({ success: true, nutrition: user.nutritionLog.slice(-1)[0] });
   } catch (error) {
-    console.error(error);
+    console.error('saveNutrition error:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 };
 
-export {saveNutrition}
+export { saveNutrition };

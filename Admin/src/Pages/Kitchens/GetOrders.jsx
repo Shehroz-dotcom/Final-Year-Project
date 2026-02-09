@@ -6,18 +6,21 @@ import Urls from "../../../../FrontEnd/src/utils/Urls.js";
 const GetOrders = () => {
   const { kitchenId } = useParams();
   const [orders, setOrders] = useState([]);
+  const [branchCode, setBranchCode] = useState(""); // store branch code
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         const res = await axios.get(
-          `${Urls.dev}/api/v1/admin/getOrders/${kitchenId}`,
+          `${Urls.dev}/api/v1/admin/getOrders/${kitchenId}`
         );
         setOrders(res.data.orders || []);
+        setBranchCode(res.data.branchCode || "N/A"); // set branch code
       } catch (error) {
         console.error("Failed to fetch orders:", error.response?.data || error);
         setOrders([]);
+        setBranchCode("N/A");
       } finally {
         setLoading(false);
       }
@@ -31,9 +34,9 @@ const GetOrders = () => {
   }
 
   return (
-    <div className="text-white p-6">
-      <h2 className="text-2xl font-bold mb-4">
-        Orders for kitchen {kitchenId}
+    <div className="text-white p-6 ">
+      <h2 className="text-2xl font-bold mb-4 bg-black p-4">
+        Orders for kitchen Branch Code: {branchCode}
       </h2>
 
       {orders.length === 0 ? (
@@ -43,7 +46,7 @@ const GetOrders = () => {
           {orders.map((order) => (
             <li
               key={order.order_id}
-              className="border border-white/20 rounded p-4"
+              className="border border-white/20 rounded p-4 bg-black/70 " 
             >
               <p>
                 <strong>Status:</strong> {order.status}
@@ -57,7 +60,7 @@ const GetOrders = () => {
                 <ul className="ml-4 list-disc">
                   {order.items.map((item, index) => (
                     <li key={index}>
-                      {item.name} - Quantity: {item.quantity}
+                      {item.name} - x : {item.quantity}
                     </li>
                   ))}
                 </ul>

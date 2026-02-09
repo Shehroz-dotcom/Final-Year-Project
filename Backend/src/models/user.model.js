@@ -64,25 +64,21 @@ const userSchema = new Schema(
       default: 'omnivore',
     },
 
-    // 🧾 Order History
-    orderHistory: [
+    // 🧾 consumend  Attributes
+    consumedFoodAttributes: [
       {
-        items: [
-          {
-            cartData: {
-              food: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'Food',
-                required: true,
-              },
-              priceAtPurchase: Number,
-              quantity: Number,
-            },
-          },
-        ],
-        totalPrice: Number,
-        totalCalories: Number,
-        orderDate: Date,
+        // Optional but strongly recommended for traceability
+        food: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Food',
+        },
+
+        // 🏷️ Classification snapshot
+        diet_compatibility: [String],
+        tags: [String],
+        suitability: [String],
+
+        consumedAt: { type: Date, default: Date.now },
       },
     ],
 

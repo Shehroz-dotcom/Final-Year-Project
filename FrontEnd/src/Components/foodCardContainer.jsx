@@ -2,7 +2,7 @@ import { memo, useContext, useEffect, useState } from 'react';
 import FoodCard from './foodCard.jsx';
 import { FoodContext } from '../Context/FoodContext/FoodContext.jsx';
 
- const DIET_OPTIONS = [
+const DIET_OPTIONS = [
   'omnivore',
   'vegetarian',
   'vegan',
@@ -18,10 +18,9 @@ import { FoodContext } from '../Context/FoodContext/FoodContext.jsx';
   'plant-based',
 ];
 
- const SUITABILITY_OPTIONS = [
+const SUITABILITY_OPTIONS = [
   'pre-workout',
   'post-workout',
-
   // goals
   'weight-loss',
   'weight-gain',
@@ -34,10 +33,9 @@ import { FoodContext } from '../Context/FoodContext/FoodContext.jsx';
   'lean-protein',
   'plant-based',
   'balanced',
-  'muscle-maintenance',
   'balanced-diet',
-  "iron-rich",
-
+  'muscle-maintenance',
+  'iron-rich',
   // meal context
   'snack',
   'meal',
@@ -45,6 +43,7 @@ import { FoodContext } from '../Context/FoodContext/FoodContext.jsx';
   'lunch',
   'dinner',
   'high-protein',
+  'quick-meal', // used in dataset
 ];
 
 const TAG_OPTIONS = [
@@ -56,8 +55,7 @@ const TAG_OPTIONS = [
   'sugar-free',
   'spicy',
   'organic',
-
-  // missing but used
+  'crispy',
   'healthy-fats',
   'rich-fat',
   'omega-3',
@@ -66,6 +64,8 @@ const TAG_OPTIONS = [
   'weight-gain',
   'muscle-building',
   'balanced',
+  'balanced-meal', // added to match dataset
+  'balanced-meals',
   'lean-protein',
   'quick-meal',
   'immune-boosting',
@@ -73,6 +73,7 @@ const TAG_OPTIONS = [
   'energy-boost',
   'vegetarian',
   'gluten-free',
+  'iron-rich', // used in dataset
 ];
 
 const FoodCardContainer = () => {
