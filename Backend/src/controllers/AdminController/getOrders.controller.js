@@ -8,14 +8,19 @@ const getOrders = async (req, res) => {
     const kitchen = await CloudKitchenModel.findById(kitchenId);
 
     if (!kitchen) {
-      return res.status(404).json({ message: 'Kitchen not found', orders: [] });
+      return res.status(404).json({ message: 'Kitchen not found', orders: [], branchCode: null });
     }
 
-    // Send back the orders array
-    res.status(200).json({ orders: kitchen.orders });
+    // Reverse the orders without modifying the original array
+    const reversedOrders = kitchen.orders.slice().reverse();
+
+    res.status(200).json({
+      branchCode: kitchen.branch_code || null,
+      orders: reversedOrders,
+    });
   } catch (error) {
     console.error('Error fetching orders:', error);
-    res.status(500).json({ message: 'Server error', orders: [] });
+    res.status(500).json({ message: 'Server error', orders: [], branchCode: null });
   }
 };
 

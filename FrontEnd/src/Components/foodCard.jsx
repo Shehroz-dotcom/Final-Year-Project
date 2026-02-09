@@ -29,7 +29,7 @@ const FoodCard = ({ food }) => {
   const protein = Number(food?.protein) || 0;
   const carbs = Number(food?.carbs) || 0;
   const fats = Number(food?.fats) || 0;
-  const calories = protein * 4 + carbs * 4 + fats * 9;
+  const calories = Number(food?.calories)
 
   return (
     <div
@@ -106,7 +106,7 @@ const FoodCard = ({ food }) => {
 
         <p className="text-sm font-semibold">
           <span className="text-yellow-400">Total Calories:</span>{' '}
-          <span className="text-green-400">{calories.toFixed(0)} kcal</span>
+          <span className="text-green-400">{calories.toFixed(0)} kcal </span>
         </p>
       </div>
     </div>
