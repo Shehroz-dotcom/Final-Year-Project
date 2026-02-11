@@ -10,25 +10,65 @@ const FoodDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { foodData } = useContext(FoodContext);
-  const { addToCart } = useContext(CartContext);
+  const { cartItems, addToCart, removeFromCart } = useContext(CartContext);
   const { userData } = useContext(UserContext);
 
   const userName = userData?.fullName;
 
-
   const [food, setFood] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  // Current quantity in cart
+  const itemCount = cartItems[food?._id] || 0;
+
+  // Load food: sessionStorage first, fallback to foodData
   useEffect(() => {
-    const selectedFood = foodData.find((item) => item._id === id);
-    setFood(selectedFood);
-  }, [id, foodData]);
+    const storedFood = sessionStorage.getItem('selectedFood');
+    if (storedFood) {
+      const parsedFood = JSON.parse(storedFood);
+      if (parsedFood._id === id) {
+        setFood(parsedFood);
+        setReviews(parsedFood.userReviews || []);
+        setLoading(false);
+        return;
+      }
+    }
 
-  if (!food) {
+    if (!foodData || foodData.length === 0) return;
+
+    const selectedFood = foodData.find((item) => item._id === id);
+    if (!selectedFood) {
+      console.log('No food found for this id');
+      setLoading(false);
+      return;
+    }
+
+    setFood(selectedFood);
+    setReviews(selectedFood.userReviews || []);
+    setLoading(false);
+  }, [foodData, id]);
+
+  // Save food in sessionStorage while on page, remove on unmount
+  useEffect(() => {
+    if (!food) return;
+
+    sessionStorage.setItem('selectedFood', JSON.stringify(food));
+    return () => {
+      sessionStorage.removeItem('selectedFood');
+    };
+  }, [food]);
+
+  if (loading) {
     return (
       <div className="text-center text-white py-20">
         Loading food details...
       </div>
     );
+  }
+
+  if (!food) {
+    return <div className="text-center text-white py-20">Food not found.</div>;
   }
 
   const handleAddToCart = () => {
@@ -39,16 +79,12 @@ const FoodDetails = () => {
     addToCart(food._id);
   };
 
-  
-
-  const relatedFoods = foodData.slice(0, 4).filter((item) => item._id !== id);
+  const relatedFoods =
+    foodData?.slice(0, 4).filter((item) => item._id !== id) || [];
 
   return (
     <div className="flex justify-center items-start py-6 sm:py-8 px-2 sm:px-4 lg:px-8">
-      <div
-        className="text-white bg-gradient-to-br from-[#0d0d0d]/80 to-[#1a1a1a]/60 backdrop-blur-md rounded-xl shadow-2xl mx-auto w-full sm:w-[95%] lg:w-[80%] px-4 sm:px-6 lg:px-12 py-6 sm:py-10 border border-white/10 
-      animate-fadeIn"
-      >
+      <div className="text-white bg-gradient-to-br from-[#0d0d0d]/80 to-[#1a1a1a]/60 backdrop-blur-md rounded-xl shadow-2xl mx-auto w-full sm:w-[95%] lg:w-[80%] px-4 sm:px-6 lg:px-12 py-6 sm:py-10 border border-white/10 animate-fadeIn">
         <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8 sm:gap-12">
           {/* Image */}
           <div className="w-full lg:w-1/2">
@@ -94,43 +130,61 @@ const FoodDetails = () => {
               </div>
             </div>
 
-            <button
-              onClick={handleAddToCart}
-              className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded transition-all duration-300 w-fit cursor-pointer"
-            >
-              Add to Cart
-            </button>
+            {/* Add to Cart / + - Controls */}
+            {/* Add to Cart / + - Controls */}
+            {itemCount === 0 ? (
+              <button
+                onClick={handleAddToCart}
+                className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg transition-all duration-300 w-fit cursor-pointer"
+              >
+                Add to Cart
+              </button>
+            ) : (
+              <div className="flex items-center gap-2 bg-black/30 rounded-full w-fit px-2 py-1 border border-white/20">
+                <button
+                  onClick={() => removeFromCart(food._id)}
+                  className="bg-red-600 hover:bg-red-700 text-white font-bold w-8 h-8 flex items-center justify-center rounded-full transition-colors duration-200"
+                >
+                  -
+                </button>
+                <span className="text-white font-semibold px-2">
+                  {itemCount}
+                </span>
+                <button
+                  onClick={() => addToCart(food._id)}
+                  className="bg-green-600 hover:bg-green-700 text-white font-bold w-8 h-8 flex items-center justify-center rounded-full transition-colors duration-200"
+                >
+                  +
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Customer Reviews */}
-
-        {userName ? (
-          <ReviewForm foodId={id} userName={userName} />
-        ) : (
-          <p className=" border border-green-400 p-4 mt-4">
-            Please login to review.
-          </p>
-        )}
+        <div className="mt-8">
+          {userName ? (
+            <ReviewForm
+              foodId={id}
+              userName={userName}
+              onSuccess={(newReview) =>
+                setReviews((prev) => [newReview, ...prev])
+              }
+            />
+          ) : (
+            <p className="border border-green-400 p-4 mt-4">
+              Please login to review.
+            </p>
+          )}
+        </div>
 
         <div className="my-6">
-          <h1
-            className="
-                  font-bold 
-                  text-yellow-400
-                  text-2xl        /* phones */
-                  sm:text-2xl     /* small screens */
-                  md:text-2xl     /* tablets */
-                  lg:text-2xl     /* laptops */
-                  xl:text-2xl     /* large desktops */
-                  tracking-wide"
-          >
+          <h1 className="font-bold text-yellow-400 text-2xl tracking-wide">
             Customer Reviews
           </h1>
         </div>
-        <ReviewList  reviews= {food.userReviews}/>
-    
-        
+        <ReviewList reviews={reviews} />
+
         {/* Related Foods */}
         {relatedFoods.length > 0 && (
           <div className="mt-12 sm:mt-16">

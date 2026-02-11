@@ -19,9 +19,7 @@ const ReviewList = ({ reviews }) => {
               {'★'.repeat(item.rating)}
             </span>
           </p>
-
           <p className="text-white mb-2">{item.review}</p>
-
           <hr className="border-t border-green-500" />
         </div>
       ))}
