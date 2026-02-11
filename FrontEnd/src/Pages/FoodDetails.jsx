@@ -143,7 +143,7 @@ const FoodDetails = () => {
               <div className="flex items-center gap-2 bg-black/30 rounded-full w-fit px-2 py-1 border border-white/20">
                 <button
                   onClick={() => removeFromCart(food._id)}
-                  className="bg-red-600 hover:bg-red-700 text-white font-bold w-8 h-8 flex items-center justify-center rounded-full transition-colors duration-200"
+                  className="bg-red-600 hover:bg-red-700 text-white font-bold w-8 h-8 flex items-center justify-center rounded-full transition-colors duration-200 cursor-pointer"
                 >
                   -
                 </button>
@@ -152,7 +152,7 @@ const FoodDetails = () => {
                 </span>
                 <button
                   onClick={() => addToCart(food._id)}
-                  className="bg-green-600 hover:bg-green-700 text-white font-bold w-8 h-8 flex items-center justify-center rounded-full transition-colors duration-200"
+                  className="bg-green-600 hover:bg-green-700 text-white font-bold w-8 h-8 flex items-center justify-center rounded-full transition-colors duration-200 cursor-pointer"
                 >
                   +
                 </button>

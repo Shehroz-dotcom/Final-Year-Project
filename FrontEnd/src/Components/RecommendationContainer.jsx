@@ -1,35 +1,19 @@
-import { memo, useRef, useEffect, useState, useContext } from 'react';
+import { memo, useEffect, useState, useContext } from 'react';
+import Slider from 'react-slick';
 import RecommentationFoodCard from './RecommentationFoodCard.jsx';
 import { FoodContext } from '../Context/FoodContext/FoodContext.jsx';
 
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
+
 const RecommendationContainer = () => {
-  const scrollRef = useRef(null);
   const { foodData } = useContext(FoodContext);
   const [recommendations, setRecommendations] = useState([]);
   const [hasUser, setHasUser] = useState(false);
 
   useEffect(() => {
-    // Check if User exists in session storage
     const userDataJSON = sessionStorage.getItem('User');
-    if (userDataJSON) {
-      setHasUser(true);
-    } else {
-      setHasUser(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-
-    const onWheel = (e) => {
-      if (e.deltaY === 0) return;
-      e.preventDefault();
-      el.scrollLeft += e.deltaY;
-    };
-
-    el.addEventListener('wheel', onWheel, { passive: false });
-    return () => el.removeEventListener('wheel', onWheel);
+    setHasUser(!!userDataJSON);
   }, []);
 
   useEffect(() => {
@@ -41,10 +25,8 @@ const RecommendationContainer = () => {
     const consumedTags = new Set();
     const consumedSuitability = new Set();
     const consumedDiet = new Set();
-    const consumedFoodIds = new Set();
 
     consumedAttrs.forEach((attr) => {
-      attr.food && consumedFoodIds.add(attr.food);
       attr.tags?.forEach((tag) => consumedTags.add(tag));
       attr.suitability?.forEach((suit) => consumedSuitability.add(suit));
       attr.diet_compatibility?.forEach((d) => consumedDiet.add(d));
@@ -67,7 +49,28 @@ const RecommendationContainer = () => {
     setRecommendations(filteredRecommendations);
   }, [foodData, hasUser]);
 
-  if (!hasUser) return null; // hide the entire container if no User
+  if (!hasUser) return null;
+
+  // Slider settings
+  const settings = {
+    dots: false,
+    infinite: false,
+    speed: 500,
+    slidesToShow: 3, // adjust as needed
+    slidesToScroll: 1,
+    swipeToSlide: true,
+    arrows: true,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: { slidesToShow: 2 },
+      },
+      {
+        breakpoint: 640,
+        settings: { slidesToShow: 1 },
+      },
+    ],
+  };
 
   return (
     <div className="p-4">
@@ -76,24 +79,22 @@ const RecommendationContainer = () => {
       </h2>
 
       <div className="bg-black/50 backdrop-blur-md rounded-xl p-4">
-        <div
-          ref={scrollRef}
-          className="flex overflow-x-auto gap-4 pb-2 scrollbar-thin scrollbar-thumb-gray-500"
-        >
-          {recommendations.length === 0 ? (
-            <p className="text-gray-400">No recommendations yet.</p>
-          ) : (
-            recommendations.map((food) => (
-              <RecommentationFoodCard
-                key={food._id}
-                name={food.food_name}
-                calories={food.calories}
-                protein={food.protein}
-                image={food.food_image_url}
-              />
-            ))
-          )}
-        </div>
+        {recommendations.length === 0 ? (
+          <p className="text-gray-400">No recommendations yet.</p>
+        ) : (
+          <Slider {...settings}>
+            {recommendations.map((food) => (
+              <div key={food._id} className="px-2">
+                <RecommentationFoodCard
+                  name={food.food_name}
+                  calories={food.calories}
+                  protein={food.protein}
+                  image={food.food_image_url}
+                />
+              </div>
+            ))}
+          </Slider>
+        )}
       </div>
     </div>
   );

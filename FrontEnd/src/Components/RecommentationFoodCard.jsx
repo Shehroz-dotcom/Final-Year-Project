@@ -9,7 +9,7 @@ const RecommentationFoodCard = ({ name, calories, protein, image }) => {
         p-3 sm:p-4
         flex-shrink-0 cursor-pointer
         transform transition-transform duration-300 ease-out
-        hover:scale-105 
+        hover:scale-105  bg-black/70
       "
     >
       <img
