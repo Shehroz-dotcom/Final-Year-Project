@@ -5,6 +5,7 @@ import { CartContext } from '../Context/CartContext/CartContext.jsx';
 import { UserContext } from '../Context/UserContext/UserContext.jsx';
 import ReviewForm from '../Components/ReviewForm.jsx';
 import ReviewList from '../Components/ReviewList.jsx';
+import Urls from '../utils/Urls.js';
 
 const FoodDetails = () => {
   const { id } = useParams();
@@ -22,40 +23,64 @@ const FoodDetails = () => {
   // Current quantity in cart
   const itemCount = cartItems[food?._id] || 0;
 
-  // Load food: sessionStorage first, fallback to foodData
+  // Load food: sessionStorage first, then context, then backend
   useEffect(() => {
-    const storedFood = sessionStorage.getItem('selectedFood');
-    if (storedFood) {
-      const parsedFood = JSON.parse(storedFood);
-      if (parsedFood._id === id) {
-        setFood(parsedFood);
-        setReviews(parsedFood.userReviews || []);
-        setLoading(false);
-        return;
+    const loadFood = async () => {
+      setLoading(true);
+
+      // 1️⃣ Check sessionStorage
+      const storedFood = sessionStorage.getItem('selectedFood');
+      if (storedFood) {
+        const parsedFood = JSON.parse(storedFood);
+        if (parsedFood._id === id) {
+          setFood(parsedFood);
+          setReviews(parsedFood.userReviews || []);
+          setLoading(false);
+          return;
+        }
       }
-    }
 
-    if (!foodData || foodData.length === 0) return;
+      // 2️⃣ Check context
+      if (foodData && foodData.length > 0) {
+        const selectedFood = foodData.find((item) => item._id === id);
+        if (selectedFood) {
+          setFood(selectedFood);
+          setReviews(selectedFood.userReviews || []);
+          setLoading(false);
+          return;
+        }
+      }
 
-    const selectedFood = foodData.find((item) => item._id === id);
-    if (!selectedFood) {
-      console.log('No food found for this id');
-      setLoading(false);
-      return;
-    }
+      // 3️⃣ Fallback: fetch from backend
+      try {
+        const response = await fetch(`${Urls.dev}/api/v1/foods/${id}`);
+        if (!response.ok) throw new Error('Food not found');
+        const data = await response.json();
+        setFood(data);
+        setReviews(data.userReviews || []);
+      } catch (err) {
+        console.error(err);
+        setFood(null);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    setFood(selectedFood);
-    setReviews(selectedFood.userReviews || []);
-    setLoading(false);
-  }, [foodData, id]);
+    loadFood();
+  }, [id, foodData]);
 
-  // Save food in sessionStorage while on page, remove on unmount
+  // Save in sessionStorage while page is active, remove on leave
   useEffect(() => {
     if (!food) return;
 
     sessionStorage.setItem('selectedFood', JSON.stringify(food));
+
+    const handleBeforeUnload = () => sessionStorage.removeItem('selectedFood');
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
     return () => {
-      sessionStorage.removeItem('selectedFood');
+      sessionStorage.removeItem('selectedFood'); // Remove on unmount
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [food]);
 
@@ -130,7 +155,6 @@ const FoodDetails = () => {
               </div>
             </div>
 
-            {/* Add to Cart / + - Controls */}
             {/* Add to Cart / + - Controls */}
             {itemCount === 0 ? (
               <button
