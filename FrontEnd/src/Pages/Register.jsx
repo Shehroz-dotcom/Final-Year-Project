@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { UserContext } from '../Context/UserContext/UserContext.jsx';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -9,7 +9,7 @@ import { getUserLocation } from '../utils/getUserLocation.js';
 import { reverseGeocode } from '../utils/reverseGeocoder.js';
 
 const Register = () => {
-  const [coords, setCoords] = useState(null); // [lat, lng]
+  const [coords, setCoords] = useState(null);
   const [locationError, setLocationError] = useState(null);
   const [showMap, setShowMap] = useState(false);
   const { Register } = useContext(UserContext);
@@ -20,10 +20,13 @@ const Register = () => {
     register,
     handleSubmit,
     setValue,
-    formState: { errors },
-  } = useForm();
+    control,
+    formState: { errors, isValid },
+  } = useForm({
+    mode: 'onChange',
+    reValidateMode: 'onChange',
+  });
 
-  // 📍 Handle map open + location fetch
   const handleOpenMap = async () => {
     setShowMap(true);
 
@@ -33,6 +36,7 @@ const Register = () => {
         setCoords([pos.latitude, pos.longitude]);
       } catch (err) {
         setLocationError(err.message);
+        toast.error(err.message);
       }
     }
   };
@@ -48,8 +52,6 @@ const Register = () => {
       latitude: coords[0],
       longitude: coords[1],
     };
-
-    console.log('Sending payload to backend:', payload);
 
     try {
       const { success, message } = await Register(payload);
@@ -88,15 +90,22 @@ const Register = () => {
           <input
             type="email"
             placeholder="Enter your email"
-            className="w-full px-3 py-2 rounded bg-transparent border border-gray-500/40 text-white"
-            {...register('email', { required: 'Email is required' })}
+            className={`w-full px-3 py-2 rounded bg-transparent border text-white 
+              ${errors.email ? 'border-red-500' : 'border-gray-500/40'}`}
+            {...register('email', {
+              required: 'Email is required',
+              pattern: {
+                value: /^[a-zA-Z0-9._%+-]+@(gmail|hotmail|outlook)\.com$/,
+                message: 'Email must be valid',
+              },
+            })}
           />
           {errors.email && (
-            <p className="text-red-400 text-sm">{errors.email.message}</p>
+            <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
           )}
         </div>
 
-        {/* Full name */}
+        {/* Full Name */}
         <div className="mb-4">
           <label className="block text-sm font-medium mb-2 text-white">
             Full Name
@@ -104,27 +113,67 @@ const Register = () => {
           <input
             type="text"
             placeholder="Enter your full name"
-            className="w-full px-3 py-2 rounded bg-transparent border border-gray-500/40 text-white"
-            {...register('fullName', { required: 'Full name is required' })}
+            className={`w-full px-3 py-2 rounded bg-transparent border text-white 
+              ${errors.fullName ? 'border-red-500' : 'border-gray-500/40'}`}
+            {...register('fullName', {
+              required: 'Full name is required',
+              minLength: {
+                value: 3,
+                message: 'Full name must be at least 3 characters',
+              },
+              pattern: {
+                value: /^[A-Za-z\s]+$/,
+                message: 'Full name must contain only letters',
+              },
+            })}
           />
           {errors.fullName && (
-            <p className="text-red-400 text-sm">{errors.fullName.message}</p>
+            <p className="text-red-500 text-sm mt-1">
+              {errors.fullName.message}
+            </p>
           )}
         </div>
 
-        {/* Phone Number (phoneNo) */}
+        {/* Phone */}
         <div className="mb-4">
           <label className="block text-sm font-medium mb-2 text-white">
             Phone Number
           </label>
-          <input
-            type="tel"
-            placeholder="Enter your phone number"
-            className="w-full px-3 py-2 rounded bg-transparent border border-gray-500/40 text-white"
-            {...register('phoneNo', { required: 'Phone number is required' })}
+          <Controller
+            name="phoneNo"
+            control={control}
+            rules={{
+              required: 'Phone number is required',
+              pattern: {
+                value: /^\d{4}-\d{7}$/,
+                message: 'Phone number must be in format 0312-7384562',
+              },
+            }}
+            render={({ field }) => (
+              <input
+                {...field}
+                type="tel"
+                placeholder="0312-7384562"
+                maxLength={12}
+                className={`w-full px-3 py-2 rounded bg-transparent border text-white 
+        ${errors.phoneNo ? 'border-red-500' : 'border-gray-500/40'}`}
+                onChange={(e) => {
+                  let value = e.target.value.replace(/\D/g, '');
+
+                  if (value.length > 4) {
+                    value = value.slice(0, 4) + '-' + value.slice(4, 11);
+                  }
+
+                  field.onChange(value); // update react-hook-form properly
+                }}
+              />
+            )}
           />
+
           {errors.phoneNo && (
-            <p className="text-red-400 text-sm">{errors.phoneNo.message}</p>
+            <p className="text-red-500 text-sm mt-1">
+              {errors.phoneNo.message}
+            </p>
           )}
         </div>
 
@@ -137,8 +186,15 @@ const Register = () => {
           <div className="relative">
             <textarea
               placeholder="Enter your address"
-              className="w-full px-3 py-2 pr-10 rounded bg-transparent border border-gray-500/40 text-white resize-none"
-              {...register('address', { required: 'Address is required' })}
+              className={`w-full px-3 py-2 pr-10 rounded bg-transparent border text-white resize-none 
+                ${errors.address ? 'border-red-500' : 'border-gray-500/40'}`}
+              {...register('address', {
+                required: 'Address is required',
+                minLength: {
+                  value: 10,
+                  message: 'Address must be at least 10 characters',
+                },
+              })}
             />
 
             <FiMapPin
@@ -150,7 +206,9 @@ const Register = () => {
           </div>
 
           {errors.address && (
-            <p className="text-red-400 text-sm">{errors.address.message}</p>
+            <p className="text-red-500 text-sm mt-1">
+              {errors.address.message}
+            </p>
           )}
         </div>
 
@@ -159,21 +217,14 @@ const Register = () => {
             <UserLocationMap
               initialCoords={coords}
               onLocationChange={async (newCoords) => {
-                // console.log('Location changed:', {
-                //   latitude: newCoords[0],
-                //   longitude: newCoords[1],
-                // });
-
                 setCoords(newCoords);
-
-                // 🔁 Fetch address from coordinates
                 const addressString = await reverseGeocode(
                   newCoords[0],
                   newCoords[1]
                 );
-
-                // Update the address input field
-                setValue('address', addressString);
+                setValue('address', addressString, {
+                  shouldValidate: true,
+                });
               }}
             />
           </div>
@@ -187,24 +238,34 @@ const Register = () => {
           <input
             type="password"
             placeholder="Enter your password"
-            className="w-full px-3 py-2 rounded bg-transparent border border-gray-500/40 text-white"
+            className={`w-full px-3 py-2 rounded bg-transparent border text-white 
+              ${errors.password ? 'border-red-500' : 'border-gray-500/40'}`}
             {...register('password', {
               required: 'Password is required',
               minLength: {
-                value: 6,
-                message: 'Password must be at least 6 characters',
+                value: 8,
+                message: 'Password must be at least 8 characters',
+              },
+              pattern: {
+                value:
+                  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#()[\]{}\-_=+]).{8,}$/,
+                message:
+                  'Password must include uppercase, lowercase, number, and special character',
               },
             })}
           />
           {errors.password && (
-            <p className="text-red-400 text-sm">{errors.password.message}</p>
+            <p className="text-red-500 text-sm mt-1">
+              {errors.password.message}
+            </p>
           )}
         </div>
 
-        {/* Submit Button */}
+        {/* Submit */}
         <button
           type="submit"
-          className="w-full py-2 bg-black text-white hover:bg-white hover:text-black font-bold rounded transition-all duration-200 cursor-pointer"
+          disabled={!isValid}
+          className="w-full py-2 bg-black text-white hover:bg-white hover:text-black font-bold rounded transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Sign up
         </button>
