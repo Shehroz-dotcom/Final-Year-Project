@@ -25,7 +25,6 @@ const NlpSearchInput = () => {
       const response = await axios.get(`${Urls.dev}/api/v1/nlp/nlpSearch`, {
         params: { query },
       });
-
       setResults(response.data.results || []);
       setIsExpanded(true);
       console.log('Search results:', response.data);
@@ -52,6 +51,21 @@ const NlpSearchInput = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Enable mouse wheel horizontal scroll for results
+  useEffect(() => {
+    const el = containerRef.current?.querySelector('.overflow-x-auto');
+    if (!el) return;
+
+    const onWheel = (e) => {
+      if (e.deltaY === 0) return;
+      e.preventDefault();
+      el.scrollLeft += e.deltaY;
+    };
+
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, [results]);
+
   return (
     <div className="w-full my-8 px-4 sm:px-6 lg:px-8" ref={containerRef}>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -67,7 +81,7 @@ const NlpSearchInput = () => {
           <input
             type="text"
             placeholder="Ask anything…"
-            className="flex-1 bg-transparent text-white placeholder-white caret-white outline-none cursor-pointer"
+            className="flex-1 bg-transparent text-white placeholder-white caret-white outline-none"
             {...register('query', {
               required: 'Search query is required',
               minLength: { value: 2, message: 'At least 2 characters' },
@@ -94,16 +108,16 @@ const NlpSearchInput = () => {
       <div
         className={`
           mt-4 w-full overflow-hidden transition-all duration-300 ease-in-out
-          ${isExpanded ? 'max-h-[50vh] p-2' : 'max-h-0 p-0'}
+          ${isExpanded ? 'max-h-[60vh] p-2' : 'max-h-0 p-0'}
         `}
       >
         {isExpanded && results.length > 0 && (
           <div className="bg-black rounded-lg p-2">
-            <div className="flex gap-4 overflow-x-auto py-2">
+            <div className="flex gap-4 overflow-x-auto py-2 cursor-pointer">
               {results.map((f, idx) => (
                 <div
                   key={idx}
-                  className="min-w-[220px] max-w-[220px] h-[40vh] bg-[#0d0d0d] text-white rounded-lg shadow-lg overflow-hidden flex-shrink-0 transition-transform duration-150 hover:scale-[1.03]"
+                  className="min-w-[280px] max-w-[280px] h-[50vh] bg-[#0d0d0d] text-white rounded-lg shadow-lg overflow-hidden flex-shrink-0 transition-transform duration-150 hover:scale-[1.03]"
                 >
                   <div className="relative w-full h-1/2 overflow-hidden">
                     <img
@@ -128,6 +142,11 @@ const NlpSearchInput = () => {
                     {f.food_calories && (
                       <p className="text-white text-xs">
                         Calories: {f.food_calories}
+                      </p>
+                    )}
+                    {f.protein && (
+                      <p className="text-white text-xs">
+                        Protein: {f.protein}g
                       </p>
                     )}
                     {f.serving_size_g && (
