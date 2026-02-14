@@ -11,6 +11,7 @@ import { reverseGeocode } from "../Utils/reverseGeocoder.js";
 const Register = () => {
   const navigate = useNavigate();
   const [coords, setCoords] = useState(null);
+  const [addressValue, setAddressValue] = useState("");
   const [locationError, setLocationError] = useState(null);
   const [showMap, setShowMap] = useState(false);
 
@@ -47,6 +48,7 @@ const Register = () => {
     try {
       data.latitude = coords[0];
       data.longitude = coords[1];
+      data.address = addressValue; // ensure address is included
 
       const result = await registerCloudKitchen(data);
 
@@ -71,37 +73,34 @@ const Register = () => {
 
         {/* Branch Code */}
         <Input
-          type="tel"
+          type="text"
           label="Branch Code"
           name="branchCode"
           register={register}
           errors={errors}
           required="Branch code is required"
           pattern={{
-            value: /^[0-9]{3,5}$/,
-            message: "Branch code must be 3–5 digits only",
+            value: /^[0-9]{3}$/,
+            message: "Branch code must be 3 digits only",
           }}
         />
 
-        {/* Address */}
+        {/* Address (read-only) */}
         <div className="relative">
           <Input
             label="Address"
             name="address"
-            register={register}
             errors={errors}
             required="Address is required"
-            minLength={{
-              value: 5,
-              message: "Address must be at least 5 characters",
-            }}
+            readOnly
+            value={addressValue} // controlled by state
           />
 
           <button
             type="button"
             onClick={handleOpenMap}
             title="Pick location on map"
-            className="absolute right-3 top-9.5 text-gray-300 hover:text-green-400 transition"
+            className="absolute right-3 top-9 text-gray-300 hover:text-green-400 transition"
           >
             <FiMapPin size={20} />
           </button>
@@ -114,15 +113,13 @@ const Register = () => {
               initialCoords={coords}
               onLocationChange={async (newCoords) => {
                 setCoords(newCoords);
-
                 try {
                   const addressString = await reverseGeocode(
                     newCoords[0],
                     newCoords[1],
                   );
-                  setValue("address", addressString, {
-                    shouldValidate: true,
-                  });
+                  setAddressValue(addressString);
+                  setValue("address", addressString, { shouldValidate: true });
                 } catch (err) {
                   console.error("Failed to fetch address:", err);
                 }

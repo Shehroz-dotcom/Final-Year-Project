@@ -9,7 +9,9 @@ const Input = ({
   errors,
   required = false,
   minLength,
+  pattern, // <- added to forward pattern validation
   className = "",
+  value, // controlled value
   ...rest
 }) => {
   const error = errors?.[name];
@@ -24,6 +26,7 @@ const Input = ({
           {label}
         </label>
       )}
+
       <input
         id={name}
         type={type}
@@ -35,9 +38,14 @@ const Input = ({
               : "border-white/50 focus:ring-2 focus:ring-green-500"
           }
           transition`}
-        {...(register && register(name, { required, minLength }))}
+        // Only register if input is uncontrolled
+        {...(register &&
+          value === undefined &&
+          register(name, { required, minLength, pattern }))}
+        value={value}
         {...rest}
       />
+
       {error && (
         <p className="mt-1 text-xs text-red-400">
           {error.message || (required && `${label || name} is required`)}

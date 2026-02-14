@@ -1,6 +1,9 @@
 import { memo } from 'react';
+import {useNavigate } from "react-router-dom"
+import { IoIosAdd, IoIosRemove } from 'react-icons/io';
 
-const RecommentationFoodCard = ({ name, calories, protein, image }) => {
+const RecommentationFoodCard = ({ name, calories, protein, image , id}) => {
+  const navigate = useNavigate()
   return (
     <div
       className="
@@ -11,6 +14,7 @@ const RecommentationFoodCard = ({ name, calories, protein, image }) => {
         transform transition-transform duration-300 ease-out
         hover:scale-105  bg-black/70
       "
+      onClick={()=> navigate(`/food/${id}`)}
     >
       <img
         src={image}

@@ -90,6 +90,7 @@ const RecommendationContainer = () => {
                   calories={food.calories}
                   protein={food.protein}
                   image={food.food_image_url}
+                  id={food._id}
                 />
               </div>
             ))}
