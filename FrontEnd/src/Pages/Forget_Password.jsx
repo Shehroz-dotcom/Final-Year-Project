@@ -5,13 +5,19 @@ import { toast } from 'react-toastify';
 import Urls from '../utils/Urls.js';
 
 const Forget_Password = () => {
+  const [loading, setLoading] = useState(false);
+
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors },
-  } = useForm();
-  const [loading, setLoading] = useState(false);
+    watch,
+    formState: { errors, isValid },
+  } = useForm({
+    mode: 'onChange', // live validation
+  });
+
+  const watchEmail = watch('email', '');
 
   const onSubmit = async (data) => {
     setLoading(true);
@@ -22,14 +28,15 @@ const Forget_Password = () => {
       );
 
       if (response.data.success) {
-        toast.success(response.data.message || 'Reset link sent to your email.');
+        toast.success(
+          response.data.message || 'Reset link sent to your email.'
+        );
         reset();
       } else {
         toast.error(response.data.message || 'Something went wrong.');
       }
     } catch (error) {
       console.error('Forget Password Error:', error);
-
       if (error.response?.status === 404) {
         toast.error('User not found.');
       } else {
@@ -39,6 +46,9 @@ const Forget_Password = () => {
       setLoading(false);
     }
   };
+
+  // Form is valid if email passes regex and is not empty
+  const isFormValid = isValid && watchEmail !== '';
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-black/80">
@@ -58,7 +68,14 @@ const Forget_Password = () => {
             id="email"
             type="email"
             placeholder="Enter your Email"
-            {...register('email', { required: 'Email is required' })}
+            {...register('email', {
+              required: 'Email is required',
+              pattern: {
+                value: /^[\w.-]+@(gmail\.com|outlook\.com|hotmail\.com)$/,
+                message:
+                  'Enter a valid email address',
+              },
+            })}
             className="p-2 rounded bg-transparent border border-gray-500 text-white placeholder-gray-400 focus:outline-none focus:border-white"
           />
           {errors.email && (
@@ -70,9 +87,9 @@ const Forget_Password = () => {
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={!isFormValid || loading}
           className={`relative inline-block px-8 py-2 font-bold text-white border-4 border-white rounded cursor-pointer overflow-hidden group transition-all duration-300 ${
-            loading ? 'opacity-70 cursor-not-allowed' : ''
+            !isFormValid || loading ? 'opacity-70 cursor-not-allowed' : ''
           }`}
         >
           <span className="absolute inset-0 before:content-[''] before:absolute before:top-1/2 before:left-1/2 before:w-[10%] before:h-[500%] before:bg-white/30 before:-translate-x-1/2 before:-translate-y-1/2 before:-rotate-45 before:transition-all before:duration-500 before:ease-out group-hover:before:w-[200%] group-hover:before:bg-white group-hover:before:rotate-0"></span>

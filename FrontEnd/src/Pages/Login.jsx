@@ -7,24 +7,23 @@ import AnimatedButton from '../Components/AnimatedButton.jsx';
 
 const Login = () => {
   const { login } = useContext(UserContext);
-
   const navigate = useNavigate();
 
+  // use mode: 'onChange' for live validation
   const {
     register,
     handleSubmit,
-    formState: { errors },
-  } = useForm();
+    formState: { errors, isValid },
+    watch,
+  } = useForm({ mode: 'onChange' });
 
   const onSubmit = async (data) => {
     try {
       const { success, message } = await login(data);
-
       if (success) {
         toast.success(message);
       }
     } catch (error) {
-      console.log(error);
       const errMsg =
         error?.response?.data?.message ||
         'Something went wrong, please try again';
@@ -32,9 +31,17 @@ const Login = () => {
     }
   };
 
+  // optional: watch all fields
+  const watchAllFields = watch();
+  const isFormValid =
+    isValid &&
+    watchAllFields.email &&
+    watchAllFields.password &&
+    watchAllFields.email !== '' &&
+    watchAllFields.password !== '';
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-[rgba(28,28,28,0.4)] backdrop-blur-md rounded-md">
-      {/** Transparent charcoal wrapper */}
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="bg-transparent p-8 rounded-lg shadow-lg w-full max-w-sm border"
@@ -43,7 +50,7 @@ const Login = () => {
           Login
         </h2>
 
-        {/** Email Input */}
+        {/* Email Input */}
         <div className="mb-4">
           <label
             htmlFor="email"
@@ -56,14 +63,21 @@ const Login = () => {
             id="email"
             placeholder="Enter your email"
             className="w-full px-3 py-2 rounded bg-transparent border border-gray-500/40 text-white placeholder-white focus:outline-none focus:ring-2 focus:ring-gray-500"
-            {...register('email', { required: 'Email is required' })}
+            {...register('email', {
+              required: 'Email is required',
+              pattern: {
+                value: /^[\w.-]+@(gmail\.com|outlook\.com|hotmail\.com)$/,
+                message:
+                  'Enter a valid email address',
+              },
+            })}
           />
           {errors.email && (
             <p className="text-red-400 text-sm mt-1">{errors.email.message}</p>
           )}
         </div>
 
-        {/** Password Input */}
+        {/* Password Input */}
         <div className="mb-6">
           <label
             htmlFor="password"
@@ -76,7 +90,18 @@ const Login = () => {
             id="password"
             placeholder="Enter your password"
             className="w-full px-3 py-2 rounded bg-transparent border border-gray-500/40 text-white placeholder-white focus:outline-none focus:ring-2 focus:ring-gray-500"
-            {...register('password', { required: 'Password is required' })}
+            {...register('password', {
+              required: 'Password is required',
+              minLength: {
+                value: 6,
+                message: 'Password must be at least 6 characters',
+              },
+              pattern: {
+                value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@&]).{6,}$/,
+                message:
+                  'Password must contain uppercase, lowercase, number, and @ or &',
+              },
+            })}
           />
           {errors.password && (
             <p className="text-red-400 text-sm mt-1">
@@ -85,30 +110,38 @@ const Login = () => {
           )}
         </div>
 
-        {/** Submit Button */}
-        <AnimatedButton type="submit" className="w-full py-2 font-bold">
+        {/* Submit Button */}
+        <AnimatedButton
+          type="submit"
+          disabled={!isFormValid}
+          className={`w-full py-2 font-bold ${
+            isFormValid
+              ? ''
+              : 'bg-gray-500 text-gray-300 cursor-not-allowed pointer-events-none'
+          }`}
+        >
           Log In
         </AnimatedButton>
-        <p className="text-white font-bold mt-4 ">
-          Dont have an Account{' '}
+
+        <p className="text-white font-bold mt-4">
+          Don't have an Account?{' '}
           <span
             className="hover:text-blue-500 cursor-pointer"
             onClick={() => navigate('/register')}
           >
             Register
           </span>{' '}
-          Here !
+          Here!
         </p>
-        {/* forget password  page */}
-        <p className="text-white font-bold mt-4 ">
-          Forget Password{' '}
+        <p className="text-white font-bold mt-4">
+          Forget Password?{' '}
           <span
             className="hover:text-blue-500 cursor-pointer"
             onClick={() => navigate('/forget_Password')}
           >
             Reset
           </span>{' '}
-          Here !
+          Here!
         </p>
       </form>
     </div>

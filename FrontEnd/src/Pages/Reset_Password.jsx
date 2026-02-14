@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import Urls from '../utils/Urls.js';
-import AnimatedButton from "../Components/AnimatedButton.jsx"
+import AnimatedButton from '../Components/AnimatedButton.jsx';
 
 const Reset_Password = () => {
   const { token } = useParams();
@@ -16,8 +16,11 @@ const Reset_Password = () => {
     handleSubmit,
     watch,
     reset,
-    formState: { errors },
-  } = useForm();
+    formState: { errors, isValid },
+  } = useForm({ mode: 'onChange' }); // live validation
+
+  const passwordValue = watch('password', '');
+  const confirmPasswordValue = watch('confirmPassword', '');
 
   const onSubmit = async (data) => {
     if (data.password !== data.confirmPassword) {
@@ -49,6 +52,13 @@ const Reset_Password = () => {
     }
   };
 
+  // Form is valid if passwords match, pass regex, and not empty
+  const isFormValid =
+    isValid &&
+    passwordValue !== '' &&
+    confirmPasswordValue !== '' &&
+    passwordValue === confirmPasswordValue;
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-black/80">
       <form
@@ -59,6 +69,7 @@ const Reset_Password = () => {
           Reset Password
         </h2>
 
+        {/* New Password */}
         <div className="flex flex-col">
           <label htmlFor="password" className="text-white mb-1">
             New Password
@@ -67,7 +78,18 @@ const Reset_Password = () => {
             id="password"
             type="password"
             placeholder="Enter new password"
-            {...register('password', { required: 'Password is required' })}
+            {...register('password', {
+              required: 'Password is required',
+              minLength: {
+                value: 6,
+                message: 'Password must be at least 6 characters',
+              },
+              pattern: {
+                value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@&]).{6,}$/,
+                message:
+                  'Password must contain uppercase, lowercase, number, and @ or &',
+              },
+            })}
             className="p-2 rounded bg-transparent border border-gray-500 text-white placeholder-gray-400 focus:outline-none focus:border-white"
           />
           {errors.password && (
@@ -77,6 +99,7 @@ const Reset_Password = () => {
           )}
         </div>
 
+        {/* Confirm Password */}
         <div className="flex flex-col">
           <label htmlFor="confirmPassword" className="text-white mb-1">
             Confirm Password
@@ -95,12 +118,21 @@ const Reset_Password = () => {
               {errors.confirmPassword.message}
             </span>
           )}
+          {passwordValue &&
+            confirmPasswordValue &&
+            passwordValue !== confirmPasswordValue && (
+              <span className="text-red-400 text-sm mt-1">
+                Passwords do not match
+              </span>
+            )}
         </div>
 
+        {/* Submit Button */}
         <AnimatedButton
           type="submit"
+          disabled={!isFormValid || loading}
           className={`w-full py-2 font-bold text-white border-4 border-white rounded ${
-            loading ? 'opacity-70 cursor-not-allowed' : ''
+            !isFormValid || loading ? 'opacity-70 cursor-not-allowed' : ''
           }`}
         >
           {loading ? 'Resetting...' : 'Reset Password'}
@@ -111,4 +143,3 @@ const Reset_Password = () => {
 };
 
 export default memo(Reset_Password);
-

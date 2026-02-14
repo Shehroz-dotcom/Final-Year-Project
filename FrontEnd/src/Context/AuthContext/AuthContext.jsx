@@ -15,7 +15,11 @@ const AuthProvider = ({ children }) => {
         withCredentials: true,
       });
 
-      setIsAuthenticated(true);
+      if (response.data?.success && response.data?.authenticated) {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+      }
     } catch (error) {
       console.error('Auth check error:', error.response?.data || error.message);
       setIsAuthenticated(false);

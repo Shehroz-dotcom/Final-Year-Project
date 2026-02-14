@@ -1,18 +1,18 @@
 import { JwtDecode } from '../../utils/JwtDecode/JwtDecode.js';
 
-const checkAuth = (req, res) => {
+const adminAuth = (req, res) => {
   try {
-    const token = req.cookies?.accessToken;
+    const token = req.cookies?.adminAccesToken;
 
     if (!token) {
       return res.status(401).json({
         success: false,
         authenticated: false,
-        message: 'Not Authorized, Please Login',
+        message: 'Not authorized, please login',
       });
     }
 
-    const decoded = JwtDecode(token, process.env.ACCESS_TOKEN_SECRET);
+    const decoded = JwtDecode(token, process.env.ADMIN_ACCESS_TOKEN_SECRET);
 
     if (!decoded || !decoded._id) {
       return res.status(403).json({
@@ -22,7 +22,16 @@ const checkAuth = (req, res) => {
       });
     }
 
-    // send success directly
+    // 🔴 ROLE CHECK
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        authenticated: false,
+        message: 'Access denied. Admins only.',
+      });
+    }
+
+    // ✅ SUCCESS RESPONSE
     return res.status(200).json({
       success: true,
       authenticated: true,
@@ -38,4 +47,4 @@ const checkAuth = (req, res) => {
   }
 };
 
-export { checkAuth };
+export { adminAuth };
