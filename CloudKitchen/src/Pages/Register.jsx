@@ -10,7 +10,7 @@ import { reverseGeocode } from "../Utils/reverseGeocoder.js";
 
 const Register = () => {
   const navigate = useNavigate();
-  const [coords, setCoords] = useState(null); // [lat, lng]
+  const [coords, setCoords] = useState(null);
   const [locationError, setLocationError] = useState(null);
   const [showMap, setShowMap] = useState(false);
 
@@ -20,10 +20,11 @@ const Register = () => {
     register,
     handleSubmit,
     setValue,
-    formState: { errors },
-  } = useForm();
+    formState: { errors, isValid },
+  } = useForm({
+    mode: "onChange",
+  });
 
-  // 📍 Handle map open + location fetch
   const handleOpenMap = async () => {
     setShowMap(true);
 
@@ -36,21 +37,24 @@ const Register = () => {
       }
     }
   };
+
   const onSubmit = async (data) => {
+    if (!coords) {
+      alert("Please select a location from the map.");
+      return;
+    }
+
     try {
-      if (coords) {
-        data.latitude = coords[0];
-        data.longitude = coords[1];
-      }
+      data.latitude = coords[0];
+      data.longitude = coords[1];
 
       const result = await registerCloudKitchen(data);
+
       if (result.success) {
         navigate("/cloudOrders");
       }
-
-      console.log("✅ Registration successful", result);
     } catch (err) {
-      console.error("❌ Registration failed:", err);
+      console.error("Registration failed:", err);
     }
   };
 
@@ -65,23 +69,32 @@ const Register = () => {
           Register
         </h2>
 
+        {/* Branch Code */}
         <Input
-          type="text"
+          type="tel"
           label="Branch Code"
           name="branchCode"
           register={register}
           errors={errors}
-          required
+          required="Branch code is required"
+          pattern={{
+            value: /^[0-9]{3,5}$/,
+            message: "Branch code must be 3–5 digits only",
+          }}
         />
 
-        {/* Address + Location Icon */}
+        {/* Address */}
         <div className="relative">
           <Input
             label="Address"
             name="address"
             register={register}
             errors={errors}
-            required
+            required="Address is required"
+            minLength={{
+              value: 5,
+              message: "Address must be at least 5 characters",
+            }}
           />
 
           <button
@@ -101,16 +114,15 @@ const Register = () => {
               initialCoords={coords}
               onLocationChange={async (newCoords) => {
                 setCoords(newCoords);
-                console.log("Marker moved to:", newCoords);
 
-                // 🔁 Reverse geocode to get address
                 try {
                   const addressString = await reverseGeocode(
                     newCoords[0],
                     newCoords[1],
                   );
-                  // Update the form address field
-                  setValue("address", addressString);
+                  setValue("address", addressString, {
+                    shouldValidate: true,
+                  });
                 } catch (err) {
                   console.error("Failed to fetch address:", err);
                 }
@@ -125,22 +137,33 @@ const Register = () => {
           </p>
         )}
 
+        {/* Password */}
         <Input
           label="Password"
           name="password"
           type="password"
           register={register}
           errors={errors}
-          required
+          required="Password is required"
           minLength={{
             value: 6,
             message: "Password must be at least 6 characters",
           }}
+          pattern={{
+            value: /^(?=.*[A-Za-z])(?=.*\d).{6,}$/,
+            message: "Password must contain at least one letter and one number",
+          }}
         />
 
+        {/* Submit Button */}
         <button
           type="submit"
-          className="w-full rounded-md bg-green-600 hover:bg-green-700 py-2 text-white font-medium transition cursor-pointer"
+          disabled={!isValid || !coords}
+          className={`w-full rounded-md py-2 text-white font-medium transition ${
+            !isValid || !coords
+              ? "bg-gray-500 cursor-not-allowed"
+              : "bg-green-600 hover:bg-green-700 cursor-pointer"
+          }`}
         >
           Register
         </button>

@@ -1,30 +1,31 @@
 import React, { memo, useContext } from "react";
 import { useForm } from "react-hook-form";
 import Input from "../components/input.jsx";
-import {useNavigate} from "react-router-dom"
+import { useNavigate } from "react-router-dom";
 import { CloudContext } from "../Context/CloudKitchenContext.jsx";
 
 const Loginpage = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const { Login } = useContext(CloudContext);
+
   const {
     register,
     handleSubmit,
-    formState: { errors },
-  } = useForm();
+    formState: { errors, isValid },
+  } = useForm({
+    mode: "onChange", // live validation
+  });
 
   const onSubmit = async (credentials) => {
     try {
-
       const response = await Login(credentials);
-      console.log(response);
-      
-      if(response.success) {
-        navigate("/cloudOrders")
-        
-        
+
+      if (response.success) {
+        navigate("/cloudOrders");
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -38,31 +39,55 @@ const Loginpage = () => {
           Login
         </h2>
 
+        {/* Branch Code */}
         <Input
           type="text"
           label="Branch Code"
           name="branch_code"
           register={register}
           errors={errors}
-          required
+          required="Branch code is required"
+          minLength={{
+            value: 3,
+            message: "Branch code must be at least 3 digits",
+          }}
+          maxLength={{
+            value: 5,
+            message: "Branch code cannot exceed 5 digits",
+          }}
+          pattern={{
+            value: /^[0-9]{3,5}$/,
+            message: "Branch code must contain only numbers (3–5 digits)",
+          }}
         />
 
+        {/* Password */}
         <Input
           label="Password"
           name="password"
           type="password"
           register={register}
           errors={errors}
-          required
+          required="Password is required"
           minLength={{
             value: 6,
             message: "Password must be at least 6 characters",
           }}
+          pattern={{
+            value: /^(?=.*[A-Za-z])(?=.*\d).{6,}$/,
+            message: "Password must contain at least one letter and one number",
+          }}
         />
 
+        {/* Submit Button */}
         <button
           type="submit"
-          className="w-full rounded-md bg-green-600 hover:bg-green-700 py-2 text-white font-medium transition cursor-pointer"
+          disabled={!isValid}
+          className={`w-full rounded-md py-2 text-white font-medium transition ${
+            !isValid
+              ? "bg-gray-500 cursor-not-allowed"
+              : "bg-green-600 hover:bg-green-700 cursor-pointer"
+          }`}
         >
           Login
         </button>
