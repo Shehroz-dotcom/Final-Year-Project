@@ -32,7 +32,28 @@ const AdminContextProvider = ({ children }) => {
     }
   };
 
-  const contextValue = { Register };
+  //login
+  const Login = async (credentials) => {
+    try {
+      const response = await axios.post(`${Urls.dev}/api/v1/admin/login`, credentials , {withCredentials:true})
+
+      if(response.data.success){
+        const admin = response.data.admin;
+        setAdminData(admin)
+        sessionStorage.setItem("admin",JSON.stringify(admin))
+      }
+      return response.data
+    } catch (error) {
+      if(error.response)
+      {
+        throw error
+      }else{
+        throw new Error ("Network error")
+      }
+    }
+  }
+
+  const contextValue = { Register , Login};
 
   return (
     <AdminContext.Provider value={contextValue}>

@@ -5,7 +5,7 @@ const generateAccessToken = async (adminId) => {
         const accessToken = admin.generateAccessToken()
         return {accessToken}
     } catch (error) {
-        throw new error ("Error generating access token")
+        throw new Error ("Error generating access token")
     }
 }
 
