@@ -21,6 +21,7 @@ import UserProfilePage from './Pages/UserProfilePage.jsx';
 import OrderStatus from './Pages/OrderStatus.jsx';
 import About from "./Pages/About.jsx"
 import Contact from "./Pages/Contact.jsx"
+import PaymentSuccess from './Pages/Payment-success.jsx';
 
 const App = () => {
   return (
@@ -51,8 +52,7 @@ const App = () => {
                 <Route path="/login" element={<Login />} />
                 <Route path="/about" element={<About/>}/>
                 <Route path="/contact" element={<Contact />} />
-              
-
+                <Route path="/success" element={<PaymentSuccess />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/food/:id" element={<FoodDetails />} />
                 <Route path="/forget_Password" element={<Forget_Password />} />

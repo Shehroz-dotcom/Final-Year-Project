@@ -65,9 +65,6 @@ const Cart = () => {
     setTotalCalories(calorieSum);
   }, [foodData, cartItems]);
 
-
-
- 
   const handleCheckout = async () => {
     try {
       if (!cartItems || Object.keys(cartItems).length === 0) {

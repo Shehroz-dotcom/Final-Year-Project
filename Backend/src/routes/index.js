@@ -1,13 +1,13 @@
-import { userRouter } from './userRoute.js';
-import { foodRouter } from './foodRoute.js';
-import { AuthRouter } from './authRoute.js';
-import { orderRouter } from './orderRoute.js';
-import { reviewRouter } from './reviewRoutes.js';
-import { cloudRouter } from './cloudRoute.js';
-import { AdminRouter } from './adminRoutes.js';
-import {nlpRouter} from "./nlpRoutes.js"
-import {sendContactEmailrouter} from "./contactRoutes.js"
-// import { paymentRouter } from './paymentRoute.js';
+import { userRouter } from './user.route.js';
+import { foodRouter } from './food.route.js';
+import { AuthRouter } from './auth.route.js';
+import { orderRouter } from './order.route.js';
+import { reviewRouter } from './review.route.js';
+import { cloudRouter } from './cloud.route.js';
+import { AdminRouter } from './admin.route.js';
+import {nlpRouter} from "./nlp.route.js"
+import {sendContactEmailrouter} from "./contact.route.js"
+
 export {
   foodRouter,
   userRouter,
@@ -18,5 +18,6 @@ export {
   cloudRouter,
   AdminRouter,
   nlpRouter,
-  // paymentRouter,
+ 
+  
 };

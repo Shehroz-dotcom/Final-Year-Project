@@ -11,7 +11,7 @@ import {
   cloudRouter,
   sendContactEmailrouter,
   AdminRouter,
-  nlpRouter
+  nlpRouter,
   // paymentRouter
 } from './routes/index.js';
 
