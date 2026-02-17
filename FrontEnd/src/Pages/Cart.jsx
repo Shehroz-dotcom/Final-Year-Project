@@ -3,21 +3,23 @@ import { FoodContext } from '../Context/FoodContext/FoodContext.jsx';
 import { UserContext } from '../Context/UserContext/UserContext.jsx';
 import { toast } from 'react-toastify';
 import { CartContext } from '../Context/CartContext/CartContext.jsx';
+import {
+  CardNumberElement,
+  CardExpiryElement,
+  CardCvcElement,
+  useStripe,
+  useElements,
+} from '@stripe/react-stripe-js';
 import Urls from '../utils/Urls.js';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-
 import { FaTimes } from 'react-icons/fa';
 
 const Cart = () => {
   const navigate = useNavigate();
   const { foodData, getFood } = useContext(FoodContext);
   const { userData } = useContext(UserContext);
-  const address = userData.address;
-  const name = userData.fullName;
-
   const {
-    // here i have all the order food id's which i can use by sending to backend api and getting the food details  and geting its nutrition and saving for the user
     cartItems,
     addToCart,
     removeFromCart,
@@ -25,9 +27,13 @@ const Cart = () => {
     clearCart,
   } = useContext(CartContext);
 
+  const stripe = useStripe();
+  const elements = useElements();
+
   const [filteredFoods, setFilteredFoods] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalCalories, setTotalCalories] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     getFood();
@@ -53,10 +59,8 @@ const Cart = () => {
       const qty = Number(cartItems[food._id]);
       if (qty > 0) {
         filtered.push(food);
-        const price = Number(food.food_price) || 0;
-        const calories = Number(food.calories) || 0;
-        priceSum += price * qty;
-        calorieSum += calories * qty;
+        priceSum += (Number(food.food_price) || 0) * qty;
+        calorieSum += (Number(food.calories) || 0) * qty;
       }
     }
 
@@ -65,22 +69,62 @@ const Cart = () => {
     setTotalCalories(calorieSum);
   }, [foodData, cartItems]);
 
-  const handleCheckout = async () => {
-    try {
-      if (!cartItems || Object.keys(cartItems).length === 0) {
-        toast.error('Cart is empty!');
-        return;
-      }
+  const handlePayment = async () => {
+    if (!cartItems || Object.keys(cartItems).length === 0) {
+      toast.error('Cart is empty!');
+      return;
+    }
+    if (!stripe || !elements) {
+      toast.error('Stripe is not loaded yet.');
+      return;
+    }
 
-      // Convert cartItems object to array
+    setLoading(true);
+
+    try {
       const cartArray = Object.entries(cartItems).map(([foodId, quantity]) => ({
         foodId,
         quantity,
       }));
 
-      const payload = { cart: cartArray, totalPrice };
+      const { data } = await axios.post(
+        `${Urls.dev}/api/v1/payment/create-payment-intent`,
+        { totalPrice },
+        { withCredentials: true }
+      );
 
-      // 1️⃣ Place the order first
+      const clientSecret = data.clientSecret;
+      if (!clientSecret) throw new Error('Failed to get payment client secret');
+
+      const cardNumber = elements.getElement(CardNumberElement);
+      const paymentResult = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: cardNumber,
+          billing_details: {
+            name: userData.fullName,
+            email: userData.email,
+            address: { line1: userData.address || '' },
+          },
+        },
+      });
+
+      if (paymentResult.error) throw new Error(paymentResult.error.message);
+
+      if (paymentResult.paymentIntent.status === 'succeeded') {
+        toast.success('Payment successful! Placing order...');
+        await handleCheckout(cartArray);
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error('Payment failed:', err);
+      toast.error(`Payment failed: ${err.message}`);
+      setLoading(false);
+    }
+  };
+
+  const handleCheckout = async (cartArray) => {
+    try {
+      const payload = { cart: cartArray, totalPrice };
       const orderResponse = await axios.post(
         `${Urls.dev}/api/v1/order/placeOrder`,
         payload,
@@ -97,14 +141,12 @@ const Cart = () => {
         `/orderStatus/${orderResponse.data.branchCode}/${orderResponse.data.order}`
       );
 
-      // 2️⃣ Only after order success, update nutrition data
+      // Update nutrition data
       await axios.post(
         `${Urls.dev}/api/v1/user/saveNutritions`,
         { cart: cartArray },
         { withCredentials: true }
       );
-
-      // 3️⃣ Update food attributes
       await axios.post(
         `${Urls.dev}/api/v1/order/UpdateFoodNutrition`,
         { cart: cartArray },
@@ -126,7 +168,6 @@ const Cart = () => {
           <h2 className="text-2xl font-bold mb-6 border-b border-white/20 pb-3">
             Your Cart
           </h2>
-
           {filteredFoods.length === 0 ? (
             <p className="text-gray-400">No items in your cart.</p>
           ) : (
@@ -134,7 +175,6 @@ const Cart = () => {
               {filteredFoods.map((food) => {
                 const quantity = Number(cartItems[food._id]) || 0;
                 const price = Number(food.food_price) || 0;
-
                 return (
                   <div
                     key={food._id}
@@ -186,53 +226,99 @@ const Cart = () => {
           )}
         </div>
 
-        {/* RIGHT SIDE – Bill Summary */}
+        {/* RIGHT SIDE – Bill & Payment */}
         <div className="md:w-[30%] w-full space-y-6">
-          <div className="bg-zinc-900 border border-white/10 rounded-lg p-6">
+          <div className="bg-zinc-900 border border-white/10 rounded-lg p-6 space-y-4">
             <h3 className="text-lg font-semibold mb-4 border-b border-white/20 pb-2">
               Bill Summary
             </h3>
+
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span>Subtotal</span>
                 <span>PKR {totalPrice.toFixed(2)}</span>
               </div>
-
-              <div className="flex justify-between">
+              {/* <div className="flex justify-between">
                 <span>Delivery</span>
                 <span>PKR 200</span>
-              </div>
-
+              </div> */}
               <div className="border-t border-white/20 my-2" />
               <div className="flex justify-between font-semibold text-green-400">
                 <span>Total</span>
-                <span>PKR {(totalPrice * 1.08 + 200).toFixed(2)}</span>
+                <span>PKR {(totalPrice  ).toFixed(2)}</span>
               </div>
             </div>
-          </div>
 
-          <button
-            onClick={() => {
-              handleCheckout();
-              // sendNutritionsData();
-              // updateFoodAttributes();
-            }}
-            className="w-full bg-white text-black font-semibold py-3 rounded-md hover:bg-green-400 transition cursor-pointer"
-          >
-            Checkout
-          </button>
+            {/* Stripe Card Inputs */}
+            <div className="mt-4 space-y-4">
+              <div>
+                <label className="block text-sm font-semibold mb-1">
+                  Card Number
+                </label>
+                <div className="bg-zinc-800 p-3 rounded-md border border-white/20">
+                  <CardNumberElement
+                    options={{
+                      style: { base: { color: '#fff', fontSize: '16px' } },
+                    }}
+                  />
+                </div>
+              </div>
 
-          {/* 🏠 Delivery Address Input */}
-          <div className="bg-zinc-900 border border-white/10 rounded-lg p-6">
-            <h3 className="text-lg font-semibold mb-3">Delivery Address</h3>
-            <input
-              type="text"
-              name="DeliveryAddress"
-              readOnly
-              value={userData.address}
-              placeholder="Enter your delivery address"
-              className="w-full bg-transparent border border-white/20 rounded-md px-3 py-2 text-white outline-none focus:border-green-400 transition"
-            />
+              <div>
+                <label className="block text-sm font-semibold mb-1">
+                  Expiry Date
+                </label>
+                <div className="bg-zinc-800 p-3 rounded-md border border-white/20">
+                  <CardExpiryElement
+                    options={{
+                      style: { base: { color: '#fff', fontSize: '16px' } },
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-1">CVC</label>
+                <div className="bg-zinc-800 p-3 rounded-md border border-white/20">
+                  <CardCvcElement
+                    options={{
+                      style: { base: { color: '#fff', fontSize: '16px' } },
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* <div>
+                <label className="block text-sm font-semibold mb-1">
+                  Postal Code
+                </label>
+                <input
+                  type="text"
+                  placeholder="Postal Code"
+                  className="w-full bg-zinc-800 p-3 rounded-md border border-white/20 text-white placeholder-gray-400 outline-none focus:border-green-400 transition"
+                />
+              </div> */}
+
+              <button
+                onClick={handlePayment}
+                disabled={loading}
+                className="w-full bg-[#635bff] text-white font-semibold py-3 rounded-md hover:bg-[#4a47c1] transition"
+              >
+                {loading ? 'Processing...' : 'Pay Now'}
+              </button>
+            </div>
+
+            {/* Delivery Address */}
+            <div className="bg-zinc-900 border border-white/10 rounded-md p-3 mt-4">
+              <h3 className="text-lg font-semibold mb-2">Delivery Address</h3>
+              <input
+                type="text"
+                readOnly
+                value={userData.address}
+                placeholder="Enter your delivery address"
+                className="w-full bg-transparent border border-white/20 rounded-md px-3 py-2 text-white outline-none focus:border-green-400 transition"
+              />
+            </div>
           </div>
         </div>
       </div>

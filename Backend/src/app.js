@@ -12,7 +12,7 @@ import {
   sendContactEmailrouter,
   AdminRouter,
   nlpRouter,
-  // paymentRouter
+  paymentRouter
 } from './routes/index.js';
 
 const app = express();
@@ -63,6 +63,8 @@ app.get("/test", (req, res) => {
 });
 
 
+//payment routes 
+app.use('/api/v1/payment', paymentRouter)
 //food routes
 app.use('/api/v1/food', foodRouter);
 //user routes

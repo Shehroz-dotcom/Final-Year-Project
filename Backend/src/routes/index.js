@@ -5,8 +5,9 @@ import { orderRouter } from './order.route.js';
 import { reviewRouter } from './review.route.js';
 import { cloudRouter } from './cloud.route.js';
 import { AdminRouter } from './admin.route.js';
-import {nlpRouter} from "./nlp.route.js"
-import {sendContactEmailrouter} from "./contact.route.js"
+import { nlpRouter } from './nlp.route.js';
+import { sendContactEmailrouter } from './contact.route.js';
+import { paymentRouter } from './payment.route.js';
 
 export {
   foodRouter,
@@ -18,6 +19,5 @@ export {
   cloudRouter,
   AdminRouter,
   nlpRouter,
- 
-  
+  paymentRouter
 };

@@ -8,6 +8,7 @@ import crypto from 'crypto';
 const PlaceOrder = async (req, res) => {
   try {
     const { cart, totalPrice } = req.body;
+      
 
     // Validate cart
     if (!Array.isArray(cart) || cart.length === 0) {

@@ -19,11 +19,15 @@ import Forget_Password from './Pages/Forget_Password.jsx';
 import Reset_Password from './Pages/Reset_Password.jsx';
 import UserProfilePage from './Pages/UserProfilePage.jsx';
 import OrderStatus from './Pages/OrderStatus.jsx';
-import About from "./Pages/About.jsx"
-import Contact from "./Pages/Contact.jsx"
-import PaymentSuccess from './Pages/Payment-success.jsx';
+import About from './Pages/About.jsx';
+import Contact from './Pages/Contact.jsx';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 
 const App = () => {
+  const stripePromise = loadStripe(
+    'pk_test_51SmafhA6pSggXt8sIF7AOkSUqxRrxnSz1AcwsMpkf9JLFbZ67wla1HgA3cHrcEnVQEGAyGLbfqm5GULuXIibkkmk00ZWNYBfMp'
+  );
   return (
     <AuthProvider>
       <FoodContextProvider>
@@ -48,11 +52,9 @@ const App = () => {
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/about" element={<About />} />
-
                 <Route path="/login" element={<Login />} />
-                <Route path="/about" element={<About/>}/>
+                <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
-                <Route path="/success" element={<PaymentSuccess />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/food/:id" element={<FoodDetails />} />
                 <Route path="/forget_Password" element={<Forget_Password />} />
@@ -60,7 +62,10 @@ const App = () => {
                   path="/cart"
                   element={
                     <ProtectedRoute>
-                      <Cart />
+                      <Elements stripe={stripePromise}>
+                        {' '}
+                        <Cart />
+                      </Elements>
                     </ProtectedRoute>
                   }
                 />
