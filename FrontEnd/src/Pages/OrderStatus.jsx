@@ -1,15 +1,18 @@
 import { memo, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Urls from '../utils/Urls.js';
 
 const OrderStatus = () => {
+  const navigate = useNavigate()
   const { orderId, branchCode } = useParams();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [timeLeft, setTimeLeft] = useState(45 * 60); // 45 minutes
+  const [timeLeft, setTimeLeft] = useState(45*60); // 45 minutes
   const [orderDelivered, setOrderDelivered] = useState(false); // track if marked delivered
 
   // Fetch order function
@@ -73,9 +76,27 @@ const OrderStatus = () => {
 
   const isMarkDeliveredActive = timeLeft <= 5 * 60;
 
-  const handleMarkDelivered = () => {
-    setOrderDelivered(true); // stop further API calls
-    alert('Order marked as delivered!');
+
+
+  const handleMarkDelivered = async () => {
+    try {
+      const response = await axios.post(
+        `${Urls.dev}/api/v1/cloud/${orderId}/${branchCode}/delivered`,
+        {},
+        { withCredentials: true }
+      );
+
+      if (response.data?.success) {
+        setOrderDelivered(true);
+        toast.success('Order marked as delivered');
+        navigate("/")
+      } else {
+        toast.error(response.data?.message || 'Failed to update order');
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.message || 'Something went wrong');
+    }
   };
 
   if (loading)

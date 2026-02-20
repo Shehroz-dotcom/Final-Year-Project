@@ -1,19 +1,18 @@
 import CloudKitchenModel from '../../models/cloudKitchen.model.js';
 import { JwtDecode } from '../../utils/JwtDecode/JwtDecode.js';
 
-const handleStatusChange = async (req, res) => {
+const markDelivered = async (req, res) => {
   try {
-    const { orderId } = req.params;
-    const { status } = req.body;
+    const { orderId, branchCode } = req.params;
 
-    if (!orderId || !status) {
+    if (!orderId || !branchCode) {
       return res.status(400).json({
         success: false,
-        message: 'orderId and status are required',
+        message: 'Order ID and Branch Code are required',
       });
     }
 
-    const token = req.cookies.cloudAccessToken;
+    const token = req.cookies?.accessToken;
 
     if (!token) {
       return res.status(401).json({
@@ -22,23 +21,23 @@ const handleStatusChange = async (req, res) => {
       });
     }
 
-    const decoded = JwtDecode(
-      token,
-      process.env.CLOUDKITCHEN_ACCESS_TOKEN_SECRET
-    );
+    const decoded = JwtDecode(token, process.env.ACCESS_TOKEN_SECRET);
 
-    const kitchenId = decoded._id;
+    if (!decoded?._id) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid token',
+      });
+    }
 
-    // 🔥 core update logic
+    // 🔎 Find kitchen + update order in one query
     const updatedKitchen = await CloudKitchenModel.findOneAndUpdate(
       {
-        _id: kitchenId,
+        branch_code: branchCode,
         'orders.order_id': orderId,
       },
       {
-        $set: {
-          'orders.$.status': status,
-        },
+        $set: { 'orders.$.status': 'delivered' },
       },
       { new: true }
     );
@@ -46,21 +45,21 @@ const handleStatusChange = async (req, res) => {
     if (!updatedKitchen) {
       return res.status(404).json({
         success: false,
-        message: 'Order not found',
+        message: 'Kitchen or Order not found',
       });
     }
 
     return res.status(200).json({
       success: true,
-      message: 'Order status updated',
+      message: 'Order delivered Successfully',
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: 'Internal server error',
+      message: 'Server error',
     });
   }
 };
 
-export { handleStatusChange };
+export { markDelivered };
