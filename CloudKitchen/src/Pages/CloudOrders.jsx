@@ -2,7 +2,7 @@ import { memo, useEffect, useState, useContext } from "react";
 import { CloudContext } from "../Context/CloudKitchenContext.jsx";
 import React from "react";
 
-const STATUS_OPTIONS = ["placed", "cooking", "out for delivery", "delivered"];
+const STATUS_OPTIONS = ["placed", "cooking", "out for delivery"];
 
 const CloudOrders = () => {
   const { FetchOrders, handleStatusChange, Logout } = useContext(CloudContext);
