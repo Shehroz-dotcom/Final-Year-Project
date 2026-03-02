@@ -49,7 +49,7 @@ const Footer = () => {
 
           <div className="flex flex-wrap justify-center md:justify-end gap-4 mt-3">
 
-            {["Home", "Menu", "Contact", "About"].map((item) => (
+            {["Home", "Contact", "About"].map((item) => (
               <button
                 key={item}
                 onClick={() =>

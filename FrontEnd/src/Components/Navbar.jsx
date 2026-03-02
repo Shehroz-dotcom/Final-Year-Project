@@ -206,9 +206,7 @@ const Navbar = () => {
                 >
                   Home
                 </li>
-                <li className="text-white font-bold py-2 px-4 hover:bg-white hover:text-black w-full text-center cursor-pointer border-b-1  border-white">
-                  Menu
-                </li>
+              
                 <li className="text-white font-bold py-2 px-4 hover:bg-white hover:text-black  w-full text-center cursor-pointer border-b-1  border-white">
                   Contact
                 </li>
@@ -263,12 +261,7 @@ const Navbar = () => {
                 >
                   Home
                 </li>
-                <li
-                  className="text-white font-semibold px-6 py-2 rounded hover:bg-white hover:text-black cursor-pointer w-full max-w-xs text-center"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Menu
-                </li>
+               
                 <li
                   className="text-white font-semibold px-6 py-2 rounded hover:bg-white hover:text-black cursor-pointer w-full max-w-xs text-center"
                   onClick={() => {

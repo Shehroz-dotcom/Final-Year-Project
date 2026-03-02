@@ -103,7 +103,7 @@ const NlpSearchInput = () => {
               active:scale-95
             "
           >
-            {loading ? 'Searching…' : 'Search'}
+            {loading ? 'Searching' : 'Search'}
           </button>
         </div>
       </form>
