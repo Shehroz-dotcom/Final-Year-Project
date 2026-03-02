@@ -3,8 +3,10 @@ import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import Urls from '../utils/Urls.js';
 import foodPlaceholder from '../assets/paul-lichtblau-13khUlRITD8-unsplash.jpg';
+import {useNavigate} from "react-router-dom"
 
 const NlpSearchInput = () => {
+  const navigate = useNavigate()
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -36,6 +38,8 @@ const NlpSearchInput = () => {
       setLoading(false);
     }
   };
+  console.log("results = " , results);
+  
 
   // Close panel if clicking outside
   useEffect(() => {
@@ -119,7 +123,7 @@ const NlpSearchInput = () => {
                   key={idx}
                   className="min-w-[280px] max-w-[280px] h-[50vh] bg-[#0d0d0d] text-white rounded-lg shadow-lg overflow-hidden flex-shrink-0 transition-transform duration-150 hover:scale-[1.03]"
                 >
-                  <div className="relative w-full h-1/2 overflow-hidden">
+                  <div onClick={()=> navigate(`/food/${f.id}`)} className="relative w-full h-1/2 overflow-hidden">
                     <img
                       src={f.food_image_url || foodPlaceholder}
                       alt={f.food_name}

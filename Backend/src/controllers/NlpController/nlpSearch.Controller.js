@@ -85,6 +85,7 @@ const nlpSearch = async (req, res) => {
       success: true,
       query,
       results: rankedFoods.map((f) => ({
+        id:f._id,
         food_name: f.food_name,
         food_description: f.food_description,
         food_category: f.food_category,
