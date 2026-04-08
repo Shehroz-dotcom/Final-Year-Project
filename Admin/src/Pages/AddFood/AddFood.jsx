@@ -1,9 +1,11 @@
+// ... existing imports ...
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
+import Select from "react-select";
 import { MdCloudUpload } from "react-icons/md";
 import { toast } from "react-toastify";
 import axios from "axios";
-import Select from "react-select"; // <-- react-select
+import CreatableSelect from "react-select/creatable";
 import Url from "../../Utils/Url.js";
 import {
   TAG_OPTIONS,
@@ -14,11 +16,6 @@ import {
 } from "../../Utils/nutritions.js";
 import { customStyles } from "../../Utils/customStyles.js";
 
-const inputBase =
-  "w-full px-3 py-2 rounded-md bg-white/15 border border-white/30 text-white placeholder-white/60 " +
-  "focus:outline-none focus:ring-2 focus:ring-white/70 focus:border-white/80 " +
-  "transition disabled:opacity-50 disabled:cursor-not-allowed";
-
 const AddFood = () => {
   const {
     register,
@@ -27,6 +24,10 @@ const AddFood = () => {
     reset,
     formState: { errors },
   } = useForm();
+  const HEALTH_OPTIONS = [
+    { value: "suitable", label: "Suitable" },
+    { value: "not_suitable", label: "Not Suitable" },
+  ];
 
   const [preview, setPreview] = useState(null);
   const [file, setFile] = useState(null);
@@ -45,13 +46,8 @@ const AddFood = () => {
       formData.append("food_name", data.food_name);
       formData.append("food_description", data.food_description);
       formData.append("food_price", data.food_price);
-
-      // ✅ Single select: extract .value
-      formData.append(
-        "food_category",
-        data.food_category ? data.food_category.value : "",
-      );
-      formData.append("food_type", data.food_type ? data.food_type.value : "");
+      formData.append("food_category", data.food_category?.value || "");
+      formData.append("food_type", data.food_type?.value || "");
 
       // Macronutrients
       formData.append("calories", data.calories);
@@ -71,11 +67,36 @@ const AddFood = () => {
         formData.append("diet_compatibility[]", d.value),
       );
 
+      // --- NEW FIELD: Ingredients ---
+      (data.ingredients || []).forEach((ing) =>
+      formData.append("ingredients[]", ing.value)
+      );
+
+      // --- NEW FIELD: Health Suitability ---
+      formData.append(
+        "health_suitability[diabetic]",
+        data.diabetic?.value || "suitable",
+      );
+      formData.append(
+        "health_suitability[high_cholesterol]",
+        data.high_cholesterol?.value || "suitable",
+      );
+      formData.append(
+        "health_suitability[hypertension]",
+        data.hypertension?.value || "suitable",
+      );
+      formData.append(
+        "health_suitability[weight_management]",
+        data.weight_management?.value || "suitable",
+      );
+
       // Send request
       const response = await axios.post(
         `${Url.dev}/api/v1/food/addFood`,
         formData,
-        { headers: { "Content-Type": "multipart/form-data" } },
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        },
       );
 
       if (response.data.success) {
@@ -92,6 +113,8 @@ const AddFood = () => {
     }
   };
 
+  const inputBase =
+    "w-full px-3 py-2 rounded-md bg-white/15 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/70 focus:border-white/80 transition";
   const mapToSelectOptions = (arr) =>
     arr.map((item) => ({ value: item, label: item }));
 
@@ -141,15 +164,13 @@ const AddFood = () => {
           />
         </div>
 
-        {/* Food Name */}
+        {/* Food Name & Description */}
         <Field label="Food Name" error={errors.food_name}>
           <input
             {...register("food_name", { required: true })}
             className={inputBase}
           />
         </Field>
-
-        {/* Description */}
         <Field label="Description" error={errors.food_description}>
           <textarea
             {...register("food_description", { required: true })}
@@ -161,9 +182,6 @@ const AddFood = () => {
         {/* Category & Price */}
         <div className="grid grid-cols-2 gap-4">
           <Field label="Category" error={errors.food_category}>
-
-           
-
             <Controller
               name="food_category"
               control={control}
@@ -180,9 +198,7 @@ const AddFood = () => {
                 />
               )}
             />
-
           </Field>
-
           <Field label="Price" error={errors.food_price}>
             <input
               type="number"
@@ -212,7 +228,7 @@ const AddFood = () => {
           />
         </Field>
 
-        {/* Calories & Serving */}
+        {/* Macronutrients & Serving */}
         <div className="grid grid-cols-2 gap-4">
           <Field label="Calories" error={errors.calories}>
             <input
@@ -221,7 +237,6 @@ const AddFood = () => {
               className={inputBase}
             />
           </Field>
-
           <Field label="Serving Size (g)" error={errors.serving_size_g}>
             <input
               type="number"
@@ -230,8 +245,6 @@ const AddFood = () => {
             />
           </Field>
         </div>
-
-        {/* Macros */}
         <div className="grid grid-cols-3 gap-4">
           {["protein", "carbs", "fat", "fiber", "sugar"].map((n) => (
             <Field key={n} label={`${n} (g)`} error={errors[n]}>
@@ -242,6 +255,114 @@ const AddFood = () => {
               />
             </Field>
           ))}
+        </div>
+
+        {/* Ingredients */}
+        <Field label="Ingredients">
+          <Controller
+            className="bg-transparent"
+            name="ingredients"
+            control={control}
+            render={({ field }) => (
+              <CreatableSelect
+                {...field}
+                isMulti
+                placeholder="Enter ingredients"
+                styles={{
+                  ...customStyles,
+                  control: (base) => ({
+                    ...base,
+                    backgroundColor: "transparent",
+                    borderColor: "rgba(255,255,255,0.3)",
+                    boxShadow: "none",
+                  }),
+                  menu: (base) => ({
+                    ...base,
+                    backgroundColor: "#1f2937", // dark dropdown (optional)
+                  }),
+                  multiValue: (base) => ({
+                    ...base,
+                    backgroundColor: "rgba(255,255,255,0.2)",
+                  }),
+                  input: (base) => ({
+                    ...base,
+                    color: "white",
+                  }),
+                  singleValue: (base) => ({
+                    ...base,
+                    color: "white",
+                  }),
+                  placeholder: (base) => ({
+                    ...base,
+                    color: "rgba(255,255,255,0.6)",
+                  }),
+                }}
+              />
+            )}
+          />
+        </Field>
+
+        {/* Health Suitability */}
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Diabetic">
+            <Controller
+              name="diabetic"
+              control={control}
+              defaultValue={HEALTH_OPTIONS[0]}
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  options={HEALTH_OPTIONS}
+                  styles={customStyles}
+                />
+              )}
+            />
+          </Field>
+
+          <Field label="High Cholesterol">
+            <Controller
+              name="high_cholesterol"
+              control={control}
+              defaultValue={HEALTH_OPTIONS[0]}
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  options={HEALTH_OPTIONS}
+                  styles={customStyles}
+                />
+              )}
+            />
+          </Field>
+
+          <Field label="Hypertension">
+            <Controller
+              name="hypertension"
+              control={control}
+              defaultValue={HEALTH_OPTIONS[0]}
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  options={HEALTH_OPTIONS}
+                  styles={customStyles}
+                />
+              )}
+            />
+          </Field>
+
+          <Field label="Weight Management">
+            <Controller
+              name="weight_management"
+              control={control}
+              defaultValue={HEALTH_OPTIONS[0]}
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  options={HEALTH_OPTIONS}
+                  styles={customStyles}
+                />
+              )}
+            />
+          </Field>
         </div>
 
         {/* Diet Compatibility */}
@@ -257,8 +378,8 @@ const AddFood = () => {
                 isClearable
                 placeholder="Select diet compatibility"
                 styles={customStyles}
-                menuPortalTarget={document.body} // moves dropdown to top of DOM
-                menuPosition="fixed" // prevents clipping inside form
+                menuPortalTarget={document.body}
+                menuPosition="fixed"
               />
             )}
           />
@@ -277,15 +398,15 @@ const AddFood = () => {
                 isClearable
                 placeholder="Select suitability"
                 styles={customStyles}
-                menuPortalTarget={document.body} // <-- portal fixes dropdown stacking
-                menuPosition="fixed" // <-- prevents clipping in form
+                menuPortalTarget={document.body}
+                menuPosition="fixed"
               />
             )}
           />
         </Field>
 
         {/* Tags */}
-        <Field label="Tags" error={errors.tags}>
+        <Field label="Tags">
           <Controller
             name="tags"
             control={control}
@@ -297,8 +418,8 @@ const AddFood = () => {
                 isClearable
                 placeholder="Select tags"
                 styles={customStyles}
-                menuPortalTarget={document.body} // <-- key fix
-                menuPosition="fixed" // optional: ensures it scrolls correctly
+                menuPortalTarget={document.body}
+                menuPosition="fixed"
               />
             )}
           />
@@ -306,11 +427,9 @@ const AddFood = () => {
 
         <button
           type="submit"
-          className="relative overflow-hidden mt-4 px-6 py-2 border border-green-400 text-white font-medium rounded-md 
-             before:absolute before:top-0 before:left-0 before:h-full before:w-0 before:bg-green-400 
-             before:z-0 before:transition-all before:duration-300
-             hover:before:w-full cursor-pointer
-             hover:text-black"
+          className="relative overflow-hidden mt-4 px-6 py-2 border border-green-400 text-white font-medium rounded-md
+             before:absolute before:top-0 before:left-0 before:h-full before:w-0 before:bg-green-400 before:z-0 before:transition-all before:duration-300
+             hover:before:w-full cursor-pointer hover:text-black"
         >
           <span className="relative z-10">Save Food Item</span>
         </button>

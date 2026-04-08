@@ -25,12 +25,13 @@ const addFood = async (req, res) => {
       fat,
       diet_compatibility,
       suitability,
-      fiber, // optional
-      sugar, // optional
-      tags, // required
+      fiber,
+      sugar,
+      tags,
+      ingredients,
     } = req.body;
 
-    // 1️⃣ Validate required fields
+    // ✅ 1. Validate required fields
     const requiredFields = [
       food_name,
       food_description,
@@ -58,13 +59,13 @@ const addFood = async (req, res) => {
       });
     }
 
-    // 2️⃣ Normalize category/type to string
+    // ✅ 2. Normalize category/type
     const normalizedCategory =
       typeof food_category === 'object' ? food_category.name : food_category;
+
     const normalizedType =
       typeof food_type === 'object' ? food_type.type : food_type;
 
-    // 3️⃣ Validate category/type enums
     if (!FOOD_CATEGORY.includes(normalizedCategory)) {
       return res.status(400).json({
         success: false,
@@ -79,7 +80,7 @@ const addFood = async (req, res) => {
       });
     }
 
-    // 4️⃣ Normalize and validate tags
+    // ✅ 3. Tags
     let parsedTags = [];
     if (tags) {
       parsedTags = Array.isArray(tags)
@@ -105,39 +106,67 @@ const addFood = async (req, res) => {
       });
     }
 
-    // 5️⃣ Validate diet_compatibility
+    // ✅ 4. Diet compatibility
     const dietArray = Array.isArray(diet_compatibility)
       ? diet_compatibility.map((d) => d.trim())
       : [];
+
     const invalidDiets = dietArray.filter(
       (d) => !DIET_COMPATIBILITY.includes(d)
     );
+
     if (invalidDiets.length) {
       return res.status(400).json({
         success: false,
-        message: `Invalid diet_compatibility value(s): ${invalidDiets.join(
-          ', '
-        )}`,
+        message: `Invalid diet_compatibility: ${invalidDiets.join(', ')}`,
       });
     }
 
-    // 6️⃣ Validate suitability
+    // ✅ 5. Suitability
     const suitabilityArray = Array.isArray(suitability)
       ? suitability.map((s) => s.trim())
       : [];
+
     const invalidSuitability = suitabilityArray.filter(
       (s) => !SUITABILITY_OPTIONS.includes(s)
     );
+
     if (invalidSuitability.length) {
       return res.status(400).json({
         success: false,
-        message: `Invalid suitability value(s): ${invalidSuitability.join(
-          ', '
-        )}`,
+        message: `Invalid suitability: ${invalidSuitability.join(', ')}`,
       });
     }
 
-    // 7️⃣ Validate image upload
+    // ✅ 6. Ingredients
+    let parsedIngredients = [];
+    if (ingredients) {
+      parsedIngredients = Array.isArray(ingredients)
+        ? ingredients.map((i) => i.trim()).filter(Boolean)
+        : [ingredients.trim()];
+    }
+
+    if (!parsedIngredients.length) {
+      return res.status(400).json({
+        success: false,
+        message: 'At least one ingredient is required',
+      });
+    }
+
+    // ✅ 7. HEALTH SUITABILITY (FIXED 🔥)
+    const healthSuitabilityParsed = {
+      diabetic: req.body['health_suitability[diabetic]'] || 'suitable',
+
+      high_cholesterol:
+        req.body['health_suitability[high_cholesterol]'] || 'suitable',
+
+      hypertension: req.body['health_suitability[hypertension]'] || 'suitable',
+
+      weight_management:
+        req.body['health_suitability[weight_management]'] || 'suitable',
+    };
+
+    // ✅ 8. Image check
     if (!req.file) {
       return res.status(400).json({
         success: false,
@@ -145,36 +174,39 @@ const addFood = async (req, res) => {
       });
     }
 
-    // 8️⃣ Check if food already exists (case-insensitive)
+    // ✅ 9. Duplicate check
     const normalizedName = food_name.trim().toLowerCase();
+
     const existingFood = await foodModel.findOne({
       food_name: normalizedName,
     });
 
     if (existingFood) {
       if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+
       return res.status(400).json({
         success: false,
         message: 'Food already exists',
       });
     }
 
-    // 9️⃣ Upload image to Cloudinary
+    // ✅ 10. Upload image
     const imagePath = path.isAbsolute(req.file.path)
       ? req.file.path
       : path.resolve(req.file.path);
 
-    const foodImageCloudinaryPath = await uploadOnCloudinary(imagePath);
-    if (!foodImageCloudinaryPath) {
+    const uploaded = await uploadOnCloudinary(imagePath);
+
+    if (!uploaded) {
       return res.status(500).json({
         success: false,
-        message: 'Image upload to Cloudinary failed',
+        message: 'Image upload failed',
       });
     }
 
-    const { url, public_id } = foodImageCloudinaryPath;
+    const { url, public_id } = uploaded;
 
-    // 🔟 Create new food
+    // ✅ 11. Create food
     const newFood = await foodModel.create({
       food_name: normalizedName,
       food_description,
@@ -193,25 +225,18 @@ const addFood = async (req, res) => {
       tags: parsedTags,
       diet_compatibility: dietArray,
       suitability: suitabilityArray,
+      ingredients: parsedIngredients,
+
+      // ✅ FIXED FIELD
+      health_suitability: healthSuitabilityParsed,
     });
 
-    // 1️⃣1️⃣ Verify embedding
+    // ✅ 12. Verify embedding
     const verifiedFood = await foodModel
       .findById(newFood._id)
       .select('+food_embedding');
 
-    console.log(
-      'Verified Embedding Size:',
-      verifiedFood.food_embedding?.length
-    );
-
-    // ✅ Print actual embedding array (use slice to avoid huge logs)
-    if (verifiedFood.food_embedding) {
-      console.log(
-        'Actual Embedding Data (first 20 values):',
-        verifiedFood.food_embedding.slice(0, 20)
-      );
-    }
+    console.log('Embedding Size:', verifiedFood.food_embedding?.length);
 
     return res.status(201).json({
       success: true,
@@ -220,6 +245,7 @@ const addFood = async (req, res) => {
     });
   } catch (error) {
     console.error('Error adding food:', error.message || error);
+
     return res.status(500).json({
       success: false,
       message: 'Server error while adding food',

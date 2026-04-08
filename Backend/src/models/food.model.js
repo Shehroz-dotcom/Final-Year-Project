@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { getEmbedding } from '../utils/NlpConfig/getEmbedding.js'; // Ensure this utility is created
+import { getEmbedding } from '../utils/NlpConfig/getEmbedding.js';
 import {
   TAG_OPTIONS,
   SUITABILITY_OPTIONS,
@@ -25,23 +25,20 @@ const FoodSchema = new mongoose.Schema(
       trim: true,
     },
 
-    // --- NEW: VECTOR STORAGE FIELD ---
-    // models/foodModel.js
-
+    // --- VECTOR STORAGE FIELD ---
     food_embedding: {
       type: [Number],
-      default: [], // Ensure it starts as an empty array
+      default: [],
       validate: {
         validator: function (v) {
-          // ✅ Allow empty array during initial validation
           if (!v || v.length === 0) return true;
-          // ✅ Enforce 1024 once the hook generates it
           return v.length === 1024;
         },
         message: 'BGE-M3 embedding must be exactly 1024 dimensions',
       },
       select: false,
     },
+
     food_price: {
       type: Number,
       required: [true, 'Price is required'],
@@ -80,6 +77,7 @@ const FoodSchema = new mongoose.Schema(
     fiber: { type: Number, required: true },
     sugar: { type: Number, required: true },
 
+    // Existing arrays
     diet_compatibility: [
       { type: String, enum: DIET_COMPATIBILITY, index: true },
     ],
@@ -95,6 +93,7 @@ const FoodSchema = new mongoose.Schema(
       },
     ],
 
+    // --- CALCULATED FIELDS ---
     calorie_density: {
       type: Number,
       default: function () {
@@ -108,13 +107,42 @@ const FoodSchema = new mongoose.Schema(
         return totalCalories ? ((this.protein * 4) / totalCalories) * 100 : 0;
       },
     },
+
+    // --- NEW FIELDS FROM ENRICHED DATA ---
+    ingredients: {
+      type: [String],
+      default: [],
+      required: true,
+    },
+
+    health_suitability: {
+      diabetic: {
+        type: String,
+        enum: ['suitable', 'not_suitable'],
+        default: 'suitable',
+      },
+      high_cholesterol: {
+        type: String,
+        enum: ['suitable', 'not_suitable'],
+        default: 'suitable',
+      },
+      hypertension: {
+        type: String,
+        enum: ['suitable', 'not_suitable'],
+        default: 'suitable',
+      },
+      weight_management: {
+        type: String,
+        enum: ['suitable', 'not_suitable'],
+        default: 'suitable',
+      },
+    },
   },
   { timestamps: true }
 );
 
-// --- NEW: PRE-SAVE HOOK FOR AUTO-EMBEDDING ---
+// --- PRE-SAVE HOOK FOR EMBEDDING GENERATION ---
 FoodSchema.pre('save', async function (next) {
-  // Only update embedding if the key descriptive fields have changed
   const isModified =
     this.isModified('food_name') ||
     this.isModified('food_description') ||
@@ -124,21 +152,20 @@ FoodSchema.pre('save', async function (next) {
   if (!isModified && !this.isNew) return next();
 
   try {
-    // Create a rich context string for BGE-M3 to "read"
     const contextString = `
       Dish: ${this.food_name}. 
       Category: ${this.food_category}. 
       Diet: ${this.diet_compatibility.join(', ')}. 
       Tags: ${this.tags.join(', ')}. 
       Description: ${this.food_description}
+      Ingredients: ${this.ingredients.join(', ')}
+      Health Suitability: ${JSON.stringify(this.health_suitability)}
     `.trim();
 
-    // Generate the 1024-dimension vector
     this.food_embedding = await getEmbedding(contextString);
     next();
   } catch (error) {
     console.error('Embedding Generation Error:', error);
-    // We call next(error) to prevent saving a dish with a broken embedding
     next(error);
   }
 });
