@@ -69,25 +69,31 @@ const AddFood = () => {
 
       // --- NEW FIELD: Ingredients ---
       (data.ingredients || []).forEach((ing) =>
-      formData.append("ingredients[]", ing.value)
+        formData.append("ingredients[]", ing.value),
       );
 
       // --- NEW FIELD: Health Suitability ---
+      // --- HEALTH SUITABILITY (FIXED SAFE VERSION) ---
+
+      const getHealthValue = (field) => {
+        const v = field?.value;
+        if (v === "suitable" || v === "not_suitable") return v;
+        return "not_suitable"; // fallback to satisfy required schema
+      };
+
+      const normalizeHealth = (field) => {
+        const v = field?.value;
+        return v === "suitable" || v === "not_suitable" ? v : "not_suitable";
+      };
+
       formData.append(
-        "health_suitability[diabetic]",
-        data.diabetic?.value || "suitable",
-      );
-      formData.append(
-        "health_suitability[high_cholesterol]",
-        data.high_cholesterol?.value || "suitable",
-      );
-      formData.append(
-        "health_suitability[hypertension]",
-        data.hypertension?.value || "suitable",
-      );
-      formData.append(
-        "health_suitability[weight_management]",
-        data.weight_management?.value || "suitable",
+        "health_suitability",
+        JSON.stringify({
+          diabetic: normalizeHealth(data.diabetic),
+          high_cholesterol: normalizeHealth(data.high_cholesterol),
+          hypertension: normalizeHealth(data.hypertension),
+          weight_management: normalizeHealth(data.weight_management),
+        }),
       );
 
       // Send request

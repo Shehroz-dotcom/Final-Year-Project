@@ -25,7 +25,6 @@ const FoodSchema = new mongoose.Schema(
       trim: true,
     },
 
-    // --- VECTOR STORAGE FIELD ---
     food_embedding: {
       type: [Number],
       default: [],
@@ -68,7 +67,6 @@ const FoodSchema = new mongoose.Schema(
       index: true,
     },
 
-    // Macronutrients
     calories: { type: Number, required: true, index: true },
     serving_size_g: { type: Number, required: true },
     protein: { type: Number, required: true },
@@ -77,11 +75,19 @@ const FoodSchema = new mongoose.Schema(
     fiber: { type: Number, required: true },
     sugar: { type: Number, required: true },
 
-    // Existing arrays
     diet_compatibility: [
       { type: String, enum: DIET_COMPATIBILITY, index: true },
     ],
-    tags: [{ type: String, enum: TAG_OPTIONS, required: true, index: true }],
+
+    tags: [
+      {
+        type: String,
+        enum: TAG_OPTIONS,
+        required: true,
+        index: true,
+      },
+    ],
+
     suitability: [{ type: String, enum: SUITABILITY_OPTIONS, index: true }],
 
     userReviews: [
@@ -93,76 +99,95 @@ const FoodSchema = new mongoose.Schema(
       },
     ],
 
-    // --- CALCULATED FIELDS ---
+    // -------------------------
+    // FIX 1: SAFE CALC FIELDS
+    // -------------------------
     calorie_density: {
       type: Number,
-      default: function () {
-        return this.serving_size_g ? this.calories / this.serving_size_g : 0;
-      },
-    },
-    protein_ratio: {
-      type: Number,
-      default: function () {
-        const totalCalories = this.protein * 4 + this.carbs * 4 + this.fat * 9;
-        return totalCalories ? ((this.protein * 4) / totalCalories) * 100 : 0;
-      },
+      default: 0,
     },
 
-    // --- NEW FIELDS FROM ENRICHED DATA ---
+    protein_ratio: {
+      type: Number,
+      default: 0,
+    },
+
     ingredients: {
       type: [String],
       default: [],
       required: true,
     },
 
+    // -------------------------
+    // FIX 2: REMOVE SILENT DEFAULT TRAP
+    // -------------------------
     health_suitability: {
       diabetic: {
         type: String,
         enum: ['suitable', 'not_suitable'],
-        default: 'suitable',
+        required: true,
       },
       high_cholesterol: {
         type: String,
         enum: ['suitable', 'not_suitable'],
-        default: 'suitable',
+        required: true,
       },
       hypertension: {
         type: String,
         enum: ['suitable', 'not_suitable'],
-        default: 'suitable',
+        required: true,
       },
       weight_management: {
         type: String,
         enum: ['suitable', 'not_suitable'],
-        default: 'suitable',
+        required: true,
       },
     },
   },
   { timestamps: true }
 );
 
-// --- PRE-SAVE HOOK FOR EMBEDDING GENERATION ---
+// -------------------------
+// FIX 3: PRE-SAVE CALCULATION (SAFE)
+// -------------------------
 FoodSchema.pre('save', async function (next) {
-  const isModified =
-    this.isModified('food_name') ||
-    this.isModified('food_description') ||
-    this.isModified('tags') ||
-    this.isModified('diet_compatibility');
-
-  if (!isModified && !this.isNew) return next();
-
   try {
-    const contextString = `
-      Dish: ${this.food_name}. 
-      Category: ${this.food_category}. 
-      Diet: ${this.diet_compatibility.join(', ')}. 
-      Tags: ${this.tags.join(', ')}. 
-      Description: ${this.food_description}
-      Ingredients: ${this.ingredients.join(', ')}
-      Health Suitability: ${JSON.stringify(this.health_suitability)}
-    `.trim();
+    // calorie density
+    this.calorie_density = this.serving_size_g
+      ? this.calories / this.serving_size_g
+      : 0;
 
-    this.food_embedding = await getEmbedding(contextString);
+    // protein ratio
+    const totalCalories = this.protein * 4 + this.carbs * 4 + this.fat * 9;
+
+    this.protein_ratio = totalCalories
+      ? ((this.protein * 4) / totalCalories) * 100
+      : 0;
+
+    // -------------------------
+    // FIX 4: EMBEDDING SAFETY
+    // -------------------------
+    const isModified =
+      this.isModified('food_name') ||
+      this.isModified('food_description') ||
+      this.isModified('tags') ||
+      this.isModified('diet_compatibility') ||
+      this.isModified('ingredients');
+
+    if (isModified || this.isNew) {
+      const contextString = `
+Dish: ${this.food_name}
+Category: ${this.food_category}
+Diet: ${(this.diet_compatibility || []).join(', ')}
+Tags: ${(this.tags || []).join(', ')}
+Ingredients: ${(this.ingredients || []).join(', ')}
+Health: ${JSON.stringify(this.health_suitability)}
+Description: ${this.food_description}
+      `.trim();
+
+      this.food_embedding = await getEmbedding(contextString);
+    }
+
     next();
   } catch (error) {
     console.error('Embedding Generation Error:', error);
@@ -171,4 +196,5 @@ FoodSchema.pre('save', async function (next) {
 });
 
 const foodModel = mongoose.models.Food || mongoose.model('Food', FoodSchema);
+
 export default foodModel;

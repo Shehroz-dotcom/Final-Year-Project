@@ -154,18 +154,46 @@ const addFood = async (req, res) => {
     }
 
     // ✅ 7. HEALTH SUITABILITY (FIXED 🔥)
-    const healthSuitabilityParsed = {
-      diabetic: req.body['health_suitability[diabetic]'] || 'suitable',
-
-      high_cholesterol:
-        req.body['health_suitability[high_cholesterol]'] || 'suitable',
-
-      hypertension: req.body['health_suitability[hypertension]'] || 'suitable',
-
-      weight_management:
-        req.body['health_suitability[weight_management]'] || 'suitable',
+    let healthSuitabilityParsed = {
+      diabetic: 'suitable',
+      high_cholesterol: 'suitable',
+      hypertension: 'suitable',
+      weight_management: 'suitable',
     };
 
+    if (req.body.health_suitability) {
+      try {
+        let parsed = req.body.health_suitability;
+
+        if (typeof parsed === 'string') {
+          parsed = JSON.parse(parsed);
+        }
+
+        if (typeof parsed === 'object' && parsed !== null) {
+          healthSuitabilityParsed = {
+            diabetic:
+              parsed.diabetic === 'not_suitable' ? 'not_suitable' : 'suitable',
+
+            high_cholesterol:
+              parsed.high_cholesterol === 'not_suitable'
+                ? 'not_suitable'
+                : 'suitable',
+
+            hypertension:
+              parsed.hypertension === 'not_suitable'
+                ? 'not_suitable'
+                : 'suitable',
+
+            weight_management:
+              parsed.weight_management === 'not_suitable'
+                ? 'not_suitable'
+                : 'suitable',
+          };
+        }
+      } catch (err) {
+        console.log('Health parse error:', err);
+      }
+    }
     // ✅ 8. Image check
     if (!req.file) {
       return res.status(400).json({

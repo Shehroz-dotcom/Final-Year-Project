@@ -18,6 +18,7 @@ const updateFood = async (req, res) => {
       tags,
       suitability,
       diet_compatibility,
+      health_suitability,
     } = req.body || {};
 
     /* -------------------- VALIDATION -------------------- */
@@ -32,17 +33,40 @@ const updateFood = async (req, res) => {
     const toNumber = (v) =>
       typeof v === 'number' && !isNaN(v) ? v : Number(v) || 0;
 
+    const safeArray = (val) => {
+      if (!val) return [];
+      if (Array.isArray(val)) return val;
+
+      try {
+        return JSON.parse(val);
+      } catch {
+        return typeof val === 'string' ? [val] : [];
+      }
+    };
+
+    const safeObject = (val) => {
+      if (!val) return undefined;
+      if (typeof val === 'object') return val;
+
+      try {
+        return JSON.parse(val);
+      } catch {
+        return undefined;
+      }
+    };
+
     /* -------------------- NORMALIZATION -------------------- */
     const proteinNum = toNumber(protein);
     const carbsNum = toNumber(carbs);
     const fatNum = toNumber(fat);
-
     const caloriesNum = toNumber(calories);
     const servingSizeNum = toNumber(serving_size_g);
 
-    const tagsArr = Array.isArray(tags) ? tags : [];
-    const suitabilityArr = Array.isArray(suitability) ? suitability : [];
-    const dietArr = Array.isArray(diet_compatibility) ? diet_compatibility : [];
+    const tagsArr = safeArray(tags);
+    const suitabilityArr = safeArray(suitability);
+    const dietArr = safeArray(diet_compatibility);
+
+    const healthObj = safeObject(health_suitability);
 
     /* -------------------- COMPUTED FIELDS -------------------- */
     const totalCalories = proteinNum * 4 + carbsNum * 4 + fatNum * 9;
@@ -55,7 +79,7 @@ const updateFood = async (req, res) => {
 
     /* -------------------- UPDATE -------------------- */
     const updatedFood = await foodModel.findOneAndUpdate(
-      { food_name }, // 🔥 update by name
+      { food_name },
       {
         food_description,
         food_price: toNumber(food_price),
@@ -73,6 +97,8 @@ const updateFood = async (req, res) => {
         tags: tagsArr,
         suitability: suitabilityArr,
         diet_compatibility: dietArr,
+
+        health_suitability: healthObj,
 
         calorie_density,
         protein_ratio,
