@@ -20,6 +20,7 @@ import Reset_Password from './Pages/Reset_Password.jsx';
 import UserProfilePage from './Pages/UserProfilePage.jsx';
 import OrderStatus from './Pages/OrderStatus.jsx';
 import About from './Pages/About.jsx';
+import UserHealthProfile from './Pages/UserHealthProfile.jsx';
 import Contact from './Pages/Contact.jsx';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
@@ -75,6 +76,14 @@ const App = () => {
                   element={
                     <ProtectedRoute>
                       <UserProfilePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/userHealthProfile"
+                  element={
+                    <ProtectedRoute>
+                      <UserHealthProfile />
                     </ProtectedRoute>
                   }
                 />

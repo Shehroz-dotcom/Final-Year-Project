@@ -8,6 +8,7 @@ import {
   ResetPassword,
   updateUserProfile,
   saveNutrition,
+  userHealthProfile
 } from '../controllers/userControllers/index.js';
 
 const userRouter = Router();
@@ -19,6 +20,7 @@ userRouter.route('/order').post(userOrder);
 userRouter.route('/forget-password').post(ForgetPassword);
 userRouter.route('/reset-password/:token').post(ResetPassword);
 userRouter.route('/updateUserProfile/:id').post(updateUserProfile);
-userRouter.route('/saveNutritions').post(saveNutrition)
+userRouter.route('/saveNutritions').post(saveNutrition);
+userRouter.route('/healthProfile').post(userHealthProfile);
 
 export { userRouter };

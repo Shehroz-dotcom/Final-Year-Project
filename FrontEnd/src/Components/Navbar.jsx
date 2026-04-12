@@ -53,7 +53,7 @@ const Navbar = () => {
   return (
     <>
       {/* Navbar for all screen sizes */}
-      <div className="bg-black px-4 py-4 md:px-12 md:py-6 w-full">
+      <div className="relative bg-black px-4 py-4 md:px-12 md:py-6 w-full">
         <div className="flex justify-between items-center">
           {/* Logo */}
           <div
@@ -163,7 +163,7 @@ const Navbar = () => {
 
         {/* Desktop Dropdown Menu */}
         {isDropDownOpen && (
-          <ul className="hidden md:flex flex-col items-center justify-center mt-3 bg-black gap-2 list-none">
+          <ul className="hidden md:flex flex-col absolute right-12 top-16 bg-black border border-white/10 rounded-md w-48 z-50">
             {isLoggedIn ? (
               <>
                 <li
@@ -174,6 +174,15 @@ const Navbar = () => {
                   }}
                 >
                   Profile
+                </li>
+                <li
+                  className="text-white font-bold py-2 px-4 hover:bg-white hover:text-black w-full text-center cursor-pointer border-b-1 border-white"
+                  onClick={() => {
+                    setIsDropDownOpen(false);
+                    navigate('/userHealthProfile'); // removed ID
+                  }}
+                >
+                  Health Profile
                 </li>
 
                 <li
@@ -206,7 +215,7 @@ const Navbar = () => {
                 >
                   Home
                 </li>
-              
+
                 <li className="text-white font-bold py-2 px-4 hover:bg-white hover:text-black  w-full text-center cursor-pointer border-b-1  border-white">
                   Contact
                 </li>
@@ -217,34 +226,44 @@ const Navbar = () => {
 
         {/* Mobile Dropdown Menu */}
         {isMobileMenuOpen && (
-          <ul className="flex md:hidden flex-col mt-4 items-center gap-3">
+          <ul className="flex md:hidden flex-col absolute top-full left-0 w-full bg-black z-50 border-t border-white/10">
             {isLoggedIn ? (
               <>
                 <li
-                  className="text-white font-semibold px-6 py-2 rounded hover:bg-white hover:text-black cursor-pointer w-full max-w-xs text-center"
+                  className="w-full flex items-center justify-center text-white font-semibold px-6 py-3 hover:bg-white hover:text-black cursor-pointer"
                   onClick={() => {
                     setIsMobileMenuOpen(false);
-                    navigate('/userProfile'); // Navigate to profile without ID
+                    navigate('/userProfile');
                   }}
                 >
                   Profile
                 </li>
 
                 <li
-                  className="text-white font-semibold px-6 py-2 rounded hover:bg-white hover:text-black cursor-pointer w-full max-w-xs text-center"
+                  className="w-full flex items-center justify-center text-white font-semibold px-6 py-3 hover:bg-white hover:text-black cursor-pointer"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    navigate('/userHealthProfile');
+                  }}
+                >
+                  Health Profile
+                </li>
+
+                <li
+                  className="w-full flex items-center justify-center text-white font-semibold px-6 py-3 hover:bg-white hover:text-black cursor-pointer"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <Link to="/cart" className="block w-full h-full text-inherit">
+                  <Link to="/cart" className="w-full flex justify-center">
                     Cart
                   </Link>
                 </li>
 
                 <li
-                  className="text-white font-semibold px-6 py-2 rounded hover:bg-white hover:text-black cursor-pointer w-full max-w-xs text-center"
+                  className="w-full flex items-center justify-center text-white font-semibold px-6 py-3 hover:bg-white hover:text-black cursor-pointer"
                   onClick={() => {
                     setIsLoggedIn(false);
                     setIsMobileMenuOpen(false);
-                    handleAuth(); // Call logout function if needed
+                    handleAuth();
                   }}
                 >
                   Logout
@@ -253,7 +272,7 @@ const Navbar = () => {
             ) : (
               <>
                 <li
-                  className="text-white font-semibold px-6 py-2 rounded hover:bg-white hover:text-black cursor-pointer w-full max-w-xs text-center"
+                  className="w-full flex items-center justify-center text-white font-semibold px-6 py-3 hover:bg-white hover:text-black cursor-pointer"
                   onClick={() => {
                     setIsMobileMenuOpen(false);
                     navigate('/');
@@ -261,9 +280,9 @@ const Navbar = () => {
                 >
                   Home
                 </li>
-               
+
                 <li
-                  className="text-white font-semibold px-6 py-2 rounded hover:bg-white hover:text-black cursor-pointer w-full max-w-xs text-center"
+                  className="w-full flex items-center justify-center text-white font-semibold px-6 py-3 hover:bg-white hover:text-black cursor-pointer"
                   onClick={() => {
                     setIsMobileMenuOpen(false);
                     navigate('/contact');
