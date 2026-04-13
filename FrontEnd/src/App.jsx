@@ -23,6 +23,7 @@ import About from './Pages/About.jsx';
 import UserHealthProfile from './Pages/UserHealthProfile.jsx';
 import Contact from './Pages/Contact.jsx';
 import { Elements } from '@stripe/react-stripe-js';
+import PersonalizedRecommendation from './Pages/PersonalizedRecommendation.jsx';
 import { loadStripe } from '@stripe/stripe-js';
 
 const App = () => {
@@ -84,6 +85,14 @@ const App = () => {
                   element={
                     <ProtectedRoute>
                       <UserHealthProfile />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/personalizedRecommnedation"
+                  element={
+                    <ProtectedRoute>
+                      <PersonalizedRecommendation />
                     </ProtectedRoute>
                   }
                 />

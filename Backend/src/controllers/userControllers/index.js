@@ -7,6 +7,7 @@ import { ResetPassword } from './ResetPassword.controller.js';
 import { updateUserProfile } from './updateUserProfile.controller.js';
 import { saveNutrition } from './saveNutrition.controller.js';
 import { userHealthProfile } from './userHealthProfile.controller.js';
+import { Recommendation } from './Recommendation.controller.js';
 export {
   registerUser,
   userLogin,
@@ -17,4 +18,5 @@ export {
   updateUserProfile,
   saveNutrition,
   userHealthProfile,
+  Recommendation,
 };

@@ -1,14 +1,14 @@
-import { memo, useEffect, useState, useContext } from 'react';
-import Slider from 'react-slick';
-import RecommentationFoodCard from './RecommentationFoodCard.jsx';
-import { FoodContext } from '../Context/FoodContext/FoodContext.jsx';
+import { memo, useEffect, useState } from 'react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
 
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
+import RecommentationFoodCard from './RecommentationFoodCard.jsx';
+import axios from 'axios';
+import Urls from '../utils/Urls.js';
 
 const RecommendationContainer = () => {
-  const { foodData } = useContext(FoodContext);
   const [recommendations, setRecommendations] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [hasUser, setHasUser] = useState(false);
 
   useEffect(() => {
@@ -17,60 +17,28 @@ const RecommendationContainer = () => {
   }, []);
 
   useEffect(() => {
-    if (!foodData || !hasUser) return;
+    const fetchRecommendations = async () => {
+      try {
+        setLoading(true);
 
-    const userData = JSON.parse(sessionStorage.getItem('User'));
-    const consumedAttrs = userData.consumedFoodAttributes || [];
+        const response = await axios.get(
+          `${Urls.dev}/api/v1/user/personalizedRecommendation`,
+          { withCredentials: true }
+        );
 
-    const consumedTags = new Set();
-    const consumedSuitability = new Set();
-    const consumedDiet = new Set();
+        setRecommendations(response.data.data || []);
+      } catch (error) {
+        console.error('Recommendation error:', error);
+        setRecommendations([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    consumedAttrs.forEach((attr) => {
-      attr.tags?.forEach((tag) => consumedTags.add(tag));
-      attr.suitability?.forEach((suit) => consumedSuitability.add(suit));
-      attr.diet_compatibility?.forEach((d) => consumedDiet.add(d));
-    });
-
-    const filteredRecommendations = foodData.filter((food) => {
-      if (!food) return false;
-
-      const matchesTag = food.tags?.some((tag) => consumedTags.has(tag));
-      const matchesSuitability = food.suitability?.some((suit) =>
-        consumedSuitability.has(suit)
-      );
-      const matchesDiet = food.diet_compatibility?.some((d) =>
-        consumedDiet.has(d)
-      );
-
-      return matchesTag || matchesSuitability || matchesDiet;
-    });
-
-    setRecommendations(filteredRecommendations);
-  }, [foodData, hasUser]);
+    if (hasUser) fetchRecommendations();
+  }, [hasUser]);
 
   if (!hasUser) return null;
-
-  // Slider settings
-  const settings = {
-    dots: false,
-    infinite: false,
-    speed: 500,
-    slidesToShow: 3, // adjust as needed
-    slidesToScroll: 1,
-    swipeToSlide: true,
-    arrows: true,
-    responsive: [
-      {
-        breakpoint: 1024,
-        settings: { slidesToShow: 2 },
-      },
-      {
-        breakpoint: 640,
-        settings: { slidesToShow: 1 },
-      },
-    ],
-  };
 
   return (
     <div className="p-4">
@@ -79,12 +47,22 @@ const RecommendationContainer = () => {
       </h2>
 
       <div className="bg-black/50 backdrop-blur-md rounded-xl p-4">
-        {recommendations.length === 0 ? (
+        {loading ? (
+          <p className="text-gray-400">Loading recommendations...</p>
+        ) : recommendations.length === 0 ? (
           <p className="text-gray-400">No recommendations yet.</p>
         ) : (
-          <Slider {...settings}>
+          <Swiper
+            spaceBetween={12}
+            slidesPerView={3}
+            breakpoints={{
+              1024: { slidesPerView: 3 },
+              640: { slidesPerView: 2 },
+              0: { slidesPerView: 1 },
+            }}
+          >
             {recommendations.map((food) => (
-              <div key={food._id} className="px-2">
+              <SwiperSlide key={food._id}>
                 <RecommentationFoodCard
                   name={food.food_name}
                   calories={food.calories}
@@ -92,9 +70,9 @@ const RecommendationContainer = () => {
                   image={food.food_image_url}
                   id={food._id}
                 />
-              </div>
+              </SwiperSlide>
             ))}
-          </Slider>
+          </Swiper>
         )}
       </div>
     </div>
