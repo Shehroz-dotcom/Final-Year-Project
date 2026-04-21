@@ -17,6 +17,7 @@ import AuthProvider from './Context/AuthContext/AuthContext.jsx';
 import FoodDetails from './Pages/FoodDetails.jsx';
 import Forget_Password from './Pages/Forget_Password.jsx';
 import Reset_Password from './Pages/Reset_Password.jsx';
+import { Chatbot } from './Components/Chatbot.jsx';
 import UserProfilePage from './Pages/UserProfilePage.jsx';
 import OrderStatus from './Pages/OrderStatus.jsx';
 import About from './Pages/About.jsx';
@@ -55,7 +56,6 @@ const App = () => {
                 <Route path="/" element={<Home />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/login" element={<Login />} />
-                <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/food/:id" element={<FoodDetails />} />
@@ -113,6 +113,9 @@ const App = () => {
               </Routes>
             </main>
             <Footer />
+            <div className="fixed bottom-6 right-6 z-50">
+              <Chatbot />
+            </div>
             {/* ✅ Toast container goes here */}
           </UserContextProvider>
         </CartContextProvider>

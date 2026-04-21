@@ -8,6 +8,7 @@ import { AdminRouter } from './admin.route.js';
 import { nlpRouter } from './nlp.route.js';
 import { sendContactEmailrouter } from './contact.route.js';
 import { paymentRouter } from './payment.route.js';
+import { chatBotRouter } from './chatbot.route.js';
 
 export {
   foodRouter,
@@ -19,5 +20,6 @@ export {
   cloudRouter,
   AdminRouter,
   nlpRouter,
-  paymentRouter
+  paymentRouter,
+  chatBotRouter,
 };

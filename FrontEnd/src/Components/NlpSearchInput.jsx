@@ -70,7 +70,7 @@ const NlpSearchInput = () => {
         >
           <input
             type="text"
-            placeholder="I want foods ..."
+            placeholder="Food catogery..."
             className="flex-1 bg-transparent text-white placeholder-white outline-none"
             {...register('query', {
               required: 'Search query is required',

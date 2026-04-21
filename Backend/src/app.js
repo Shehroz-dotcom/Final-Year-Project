@@ -12,7 +12,8 @@ import {
   sendContactEmailrouter,
   AdminRouter,
   nlpRouter,
-  paymentRouter
+  paymentRouter,
+  chatBotRouter,
 } from './routes/index.js';
 
 const app = express();
@@ -52,19 +53,18 @@ app.use(cookieParser());
 
 // ✅ Routes (AFTER parsers)
 //geting address cordinatess api
-//nlp routes 
-app.use('/api/v1/nlp' , nlpRouter)
+//nlp routes
+app.use('/api/v1/nlp', nlpRouter);
 
 // Contact Routes
-app.use("/api/v1/contact", sendContactEmailrouter);
+app.use('/api/v1/contact', sendContactEmailrouter);
 
-app.get("/test", (req, res) => {
-  res.send("Backend working");
+app.get('/test', (req, res) => {
+  res.send('Backend working');
 });
 
-
-//payment routes 
-app.use('/api/v1/payment', paymentRouter)
+//payment routes
+app.use('/api/v1/payment', paymentRouter);
 //food routes
 app.use('/api/v1/food', foodRouter);
 //user routes
@@ -72,10 +72,11 @@ app.use('/api/v1/user', userRouter);
 app.use('/api/v1/auth', AuthRouter);
 app.use('/api/v1/order', orderRouter);
 app.use('/api/v1/review', reviewRouter);
-//cloud kitchen routes 
+//cloud kitchen routes
 app.use('/api/v1/cloud', cloudRouter);
-//admin routes 
-app.use('/api/v1/admin', AdminRouter)
+//admin routes
+app.use('/api/v1/admin', AdminRouter);
+app.use('/api/v1/chatbot', chatBotRouter);
 
 //payment Routes
 // app.use('/api/v1/payment',paymentRouter);
@@ -83,7 +84,5 @@ app.use('/api/v1/admin', AdminRouter)
 app.get('/', (req, res) => {
   res.send('Api working');
 });
-
-
 
 export { app };
