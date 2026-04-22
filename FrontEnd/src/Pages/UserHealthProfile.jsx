@@ -9,6 +9,8 @@ const UserHealthProfile = () => {
 
   const { register, handleSubmit, reset } = useForm({
     defaultValues: {
+      age: '',
+      weight: '',
       dietType: 'omnivore',
       spiceTolerance: 'medium',
       allergies: [],
@@ -17,7 +19,7 @@ const UserHealthProfile = () => {
     },
   });
 
-  const next = () => setStep((s) => Math.min(s + 1, 5));
+  const next = () => setStep((s) => Math.min(s + 1, 6));
   const back = () => setStep((s) => Math.max(s - 1, 0));
 
   const onSubmit = async (data) => {
@@ -56,13 +58,49 @@ const UserHealthProfile = () => {
         <div className="w-full bg-zinc-800 h-2 rounded mb-6">
           <div
             className="h-2 bg-white rounded transition-all"
-            style={{ width: `${((step + 1) / 6) * 100}%` }}
+            style={{ width: `${((step + 1) / 7) * 100}%` }}
           />
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)}>
-          {/* STEP 1 */}
+          {/* STEP 1 - AGE & WEIGHT */}
           {step === 0 && (
+            <div>
+              <h3 className="text-lg mb-4">Basic Info</h3>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block mb-1 text-sm">Age</label>
+                  <input
+                    type="number"
+                    placeholder="Enter your age"
+                    {...register('age', {
+                      required: true,
+                      min: 1,
+                      max: 120,
+                    })}
+                    className="w-full p-3 bg-black border border-zinc-700 rounded"
+                  />
+                </div>
+
+                <div>
+                  <label className="block mb-1 text-sm">Weight (kg)</label>
+                  <input
+                    type="number"
+                    placeholder="Enter your weight"
+                    {...register('weight', {
+                      required: true,
+                      min: 1,
+                    })}
+                    className="w-full p-3 bg-black border border-zinc-700 rounded"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 2 */}
+          {step === 1 && (
             <div>
               <h3 className="text-lg mb-4">Choose your diet</h3>
               <select
@@ -79,8 +117,8 @@ const UserHealthProfile = () => {
             </div>
           )}
 
-          {/* STEP 2 */}
-          {step === 1 && (
+          {/* STEP 3 */}
+          {step === 2 && (
             <div>
               <h3 className="text-lg mb-4">Spice tolerance</h3>
               <select
@@ -95,8 +133,8 @@ const UserHealthProfile = () => {
             </div>
           )}
 
-          {/* STEP 3 */}
-          {step === 2 && (
+          {/* STEP 4 */}
+          {step === 3 && (
             <div>
               <h3 className="text-lg mb-4">Allergies</h3>
 
@@ -120,8 +158,8 @@ const UserHealthProfile = () => {
             </div>
           )}
 
-          {/* STEP 4 */}
-          {step === 3 && (
+          {/* STEP 5 */}
+          {step === 4 && (
             <div>
               <h3 className="text-lg mb-4">Health goals</h3>
 
@@ -149,8 +187,8 @@ const UserHealthProfile = () => {
             </div>
           )}
 
-          {/* STEP 5 */}
-          {step === 4 && (
+          {/* STEP 6 */}
+          {step === 5 && (
             <div>
               <h3 className="text-lg mb-4">Avoid foods</h3>
 
@@ -178,8 +216,8 @@ const UserHealthProfile = () => {
             </div>
           )}
 
-          {/* STEP 6 - REVIEW */}
-          {step === 5 && (
+          {/* STEP 7 - REVIEW */}
+          {step === 6 && (
             <div className="space-y-2 text-sm">
               <h3 className="text-lg mb-4">Review</h3>
               <p>Check your selections and submit.</p>
@@ -198,7 +236,7 @@ const UserHealthProfile = () => {
               Back
             </button>
 
-            {step < 5 ? (
+            {step < 6 ? (
               <button
                 type="button"
                 onClick={next}

@@ -67,14 +67,24 @@ const userSchema = new Schema(
 
     // 🧠 NEW: FULL HEALTH PROFILE (MAIN RECOMMENDATION ENGINE INPUT)
     healthProfile: {
-      // more flexible diet type (future-proof vs dietPreference)
       dietType: {
         type: String,
         enum: ['omnivore', 'vegetarian', 'vegan', 'keto', 'paleo', 'jain'],
         default: 'omnivore',
       },
 
-      // allergies (critical safety filter)
+      // ✅ NEW FIELDS
+      age: {
+        type: Number,
+        min: 0,
+        max: 120,
+      },
+
+      weight: {
+        type: Number, // in kg (be explicit in your app)
+        min: 0,
+      },
+
       allergies: [
         {
           type: String,
@@ -82,14 +92,12 @@ const userSchema = new Schema(
         },
       ],
 
-      // spice preference (matches Food.spice_level)
       spiceTolerance: {
         type: String,
         enum: ['none', 'mild', 'medium', 'hot'],
         default: 'medium',
       },
 
-      // user goals (used for ranking, NOT filtering)
       goals: [
         {
           type: String,
@@ -103,7 +111,6 @@ const userSchema = new Schema(
         },
       ],
 
-      // avoid preferences (matches Food.avoid_flags)
       avoid: [
         {
           type: String,
