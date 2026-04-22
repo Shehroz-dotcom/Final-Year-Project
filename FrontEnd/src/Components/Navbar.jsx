@@ -66,6 +66,7 @@ const Navbar = () => {
           >
             Eatelligence
           </div>
+          <div className="text-white font-bold">Ai Food Recommendation system</div>
 
           {/* Right section */}
           <div className="flex items-center gap-4">
