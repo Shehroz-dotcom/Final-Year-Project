@@ -1,6 +1,6 @@
 // Utils/Url.js
 const Urls = {
-  dev: "http://localhost:8000",
+  dev: 'https://final-year-project-production-caea.up.railway.app/',
   // prod: "https://myapi.com",
 };
 
