@@ -2,10 +2,11 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "4:21:34\r images are uploaded on cloudinary but when you delete a food you also needot delete its image from the cloudinary look into that functionality\r ,make a separate file to delele photos from the cloudinary = deleteOnCloudinary",
-  "main": "index.js",
+  "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js"
+    "dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js",
+    "start": "node src/index.js"
   },
   "author": "Shehroze Farooq",
   "license": "ISC",
