@@ -10,6 +10,7 @@ import {
   saveNutrition,
   userHealthProfile,
   Recommendation,
+  DownloadPersonalProfile
 } from '../controllers/userControllers/index.js';
 
 const userRouter = Router();
@@ -24,5 +25,6 @@ userRouter.route('/updateUserProfile/:id').post(updateUserProfile);
 userRouter.route('/saveNutritions').post(saveNutrition);
 userRouter.route('/healthProfile').post(userHealthProfile);
 userRouter.route('/personalizedRecommendation').get(Recommendation);
+userRouter.route('/downloadPersonalProfile').get(DownloadPersonalProfile)
 
 export { userRouter };

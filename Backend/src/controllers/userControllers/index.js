@@ -8,6 +8,7 @@ import { updateUserProfile } from './updateUserProfile.controller.js';
 import { saveNutrition } from './saveNutrition.controller.js';
 import { userHealthProfile } from './userHealthProfile.controller.js';
 import { Recommendation } from './Recommendation.controller.js';
+import { DownloadPersonalProfile } from './DownloadPersonalProfile.controller.js';
 export {
   registerUser,
   userLogin,
@@ -19,4 +20,5 @@ export {
   saveNutrition,
   userHealthProfile,
   Recommendation,
+  DownloadPersonalProfile,
 };

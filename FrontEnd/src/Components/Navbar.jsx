@@ -183,7 +183,7 @@ const Navbar = () => {
                     navigate('/userHealthProfile'); // removed ID
                   }}
                 >
-                  Health Profile
+                  Personal Profile
                 </li>
                  {/* <li
                   className="text-white font-bold py-2 px-4 hover:bg-white hover:text-black w-full text-center cursor-pointer border-b-1 border-white"
@@ -256,7 +256,7 @@ const Navbar = () => {
                     navigate('/userHealthProfile');
                   }}
                 >
-                  Health Profile
+                  Personal Profile
                 </li>
                  {/* <li
                   className="w-full flex items-center justify-center text-white font-semibold px-6 py-3 hover:bg-white hover:text-black cursor-pointer"
